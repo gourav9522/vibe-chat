@@ -3,10 +3,21 @@ const axios = require('axios');
 const cron = require('node-cron');
 const multer = require('multer');
 const FormData = require('form-data');
-const cors = require('cors'); // <-- Yeh add karna hai
 
 const app = express();
-app.use(cors()); // <-- Yeh add karna hai taaki console se request block na ho
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Manual CORS Headers (Bina kisi extra NPM package ke)
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 
 const TELEGRAM_ACCOUNTS = [
