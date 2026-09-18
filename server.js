@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Multi-Telegram Accounts Configuration (Bari-bari se upload karne ke liye)
+// Multiple Telegram Accounts (Bari-bari se APK upload karne ke liye)
 const TELEGRAM_ACCOUNTS = [
     {
         botToken: '8953260237:AAGeFUzkNOzhQ8dthA00K81cgXwI8ZqkY90',
@@ -31,15 +31,10 @@ const TELEGRAM_ACCOUNTS = [
         botToken: 'YAHAN_DOOSRE_BOT_KA_TOKEN_DAAL',
         chatId: 'YAHAN_DOOSRE_CHAT_ID_DAAL',
         accountName: 'Telegram Account 2'
-    },
-    {
-        botToken: 'YAHAN_TEESRE_BOT_KA_TOKEN_DAAL',
-        chatId: 'YAHAN_TEESRE_CHAT_ID_DAAL',
-        accountName: 'Telegram Account 3'
     }
 ];
 
-// Internet Archive Credentials
+// Internet Archive Credentials (Logo aur Screenshots ke liye)
 const IA_ACCESS_KEY = 'JyyV5luXiOGFzTCX';
 const IA_SECRET_KEY = 'OLmzxUOSjra7c5Mh';
 
@@ -58,7 +53,6 @@ app.post('/api/upload-apk', upload.fields([
 ]), async (req, res) => {
     try {
         const activeAccount = TELEGRAM_ACCOUNTS[currentAccountIndex];
-        // Rotate to next account for next upload
         currentAccountIndex = (currentAccountIndex + 1) % TELEGRAM_ACCOUNTS.length;
 
         const token = activeAccount.botToken;
@@ -86,6 +80,7 @@ app.post('/api/upload-apk', upload.fields([
         const filePatRes = await axios.get(`https://api.telegram.org/bot${token}/getFile?file_id=${doc.file_id}`);
         const directDownloadUrl = `https://api.telegram.org/file/bot${token}/${filePatRes.data.result.file_path}`;
 
+        // Unique item name for Internet Archive assets
         const iaItemName = `apklayer-assets-${Date.now()}`;
 
         // 2. Upload Logo to Internet Archive
@@ -149,51 +144,9 @@ app.post('/api/upload-apk', upload.fields([
     }
 });
 
-// 24-Hour Automated Link Health Checker & Alert System
-async function checkAllAppLinks() {
-    console.log('Running 24-hour automated app download links health check...');
-    try {
-        const response = await axios.get(FIREBASE_DB_URL);
-        const apps = response.data;
-        if (!apps) return;
-
-        let alertIndex = 0;
-
-        for (const appId in apps) {
-            const app = apps[appId];
-            if (app && app.archiveUrl && app.archiveUrl.startsWith('http')) {
-                try {
-                    // Head/Get request to verify if link is working
-                    await axios.head(app.archiveUrl, { timeout: 10000 });
-                } catch (linkErr) {
-                    console.warn(`Dead link detected for app: ${app.appName}`);
-                    
-                    // Route alert to next Telegram account in rotation
-                    const targetAccount = TELEGRAM_ACCOUNTS[alertIndex % TELEGRAM_ACCOUNTS.length];
-                    alertIndex++;
-
-                    const alertMessage = `⚠️ *DEAD LINK ALERT!*\n\n` +
-                                         `📱 *App Name:* ${app.appName}\n` +
-                                         `📦 *Package:* ${app.packageName}\n` +
-                                         `❌ Link is broken or inaccessible! Please re-upload.`;
-
-                    await axios.post(`https://api.telegram.org/bot${targetAccount.botToken}/sendMessage`, {
-                        chat_id: targetAccount.chatId,
-                        text: alertMessage,
-                        parse_mode: 'Markdown'
-                    }).catch(err => console.error("Failed to send telegram alert:", err.message));
-                }
-            }
-        }
-        console.log('Health check completed successfully.');
-    } catch (err) {
-        console.error('Health check execution error:', err.message);
-    }
-}
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Telegram Storage Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
     const SERVER_URL = process.env.RENDER_EXTERNAL_URL || 'https://download-link-server.onrender.com';
     
     // Auto ping every 4 minutes to keep server awake
@@ -202,9 +155,4 @@ app.listen(PORT, () => {
             .then(() => console.log('Self-ping successful: Server is awake.'))
             .catch((err) => console.error('Self-ping failed:', err.message));
     }, 4 * 60 * 1000);
-
-    // Schedule 24-hour link health checker task using node-cron (Runs every day at midnight or 24h interval)
-    cron.schedule('0 0 * * *', () => {
-        checkAllAppLinks();
-    });
 });
