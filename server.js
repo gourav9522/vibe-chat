@@ -33,6 +33,11 @@ const TELEGRAM_ACCOUNTS = [
 
 let currentAccountIndex = 0;
 
+// Ping route for self-ping to prevent Render sleep
+app.get('/ping', (req, res) => {
+    res.send('Pong! Server is active.');
+});
+
 // Upload API: Console se file yahan aayegi aur round-robin rotate hogi
 app.post('/api/upload-apk', upload.fields([{ name: 'apkFile' }, { name: 'logoFile' }]), async (req, res) => {
     try {
@@ -59,7 +64,7 @@ app.post('/api/upload-apk', upload.fields([{ name: 'apkFile' }, { name: 'logoFil
         const filePatRes = await axios.get(`https://api.telegram.org/bot${activeAccount.botToken}/getFile?file_id=${fileId}`);
         const filePath = filePatRes.data.result.file_path;
         
-        // Internet Archive jaisi Direct Browser Download Link
+        // Direct Browser Download Link
         const directDownloadUrl = `https://api.telegram.org/file/bot${activeAccount.botToken}/${filePath}`;
 
         res.json({
@@ -99,7 +104,6 @@ cron.schedule('0 0 * * *', async () => {
                             break;
                         }
                     }
-                    // Server console par saaf dikh jayega ki kaunsa channel/account ban hua aur kaunsi app fail hai
                     console.log(`❌ CHANNEL/ACCOUNT BAN ALERT!`);
                     console.log(`📱 App Name: ${appData.appName}`);
                     console.log(`📂 Affected Account/Channel: ${affectedAccount}`);
@@ -113,4 +117,14 @@ cron.schedule('0 0 * * *', async () => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Telegram Storage Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Telegram Storage Server running on port ${PORT}`);
+
+    // Self-ping mechanism to keep Render alive every 14 minutes
+    const SERVER_URL = process.env.RENDER_EXTERNAL_URL || 'https://download-link-server.onrender.com';
+    setInterval(() => {
+        axios.get(`${SERVER_URL}/ping`)
+            .then(() => console.log('Self-ping successful: Server is awake.'))
+            .catch((err) => console.error('Self-ping failed:', err.message));
+    }, 14 * 60 * 1000);
+});
