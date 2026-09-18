@@ -28,9 +28,9 @@ const TELEGRAM_ACCOUNTS = [
     }
 ];
 
-// Internet Archive Credentials (Yahan apni Archive.org ki keys daal dena)
-const IA_ACCESS_KEY = 'YAHAN_APNI_ACCESS_KEY_DAL';
-const IA_SECRET_KEY = 'YAHAN_APNI_SECRET_KEY_DAL';
+// Internet Archive Credentials
+const IA_ACCESS_KEY = 'JyyV5luXiOGFzTCX';
+const IA_SECRET_KEY = 'OLmzxUOSjra7c5Mh';
 
 let currentAccountIndex = 0;
 
@@ -72,7 +72,6 @@ app.post('/api/upload-apk', upload.fields([
         const filePatRes = await axios.get(`https://api.telegram.org/bot${token}/getFile?file_id=${doc.file_id}`);
         const directDownloadUrl = `https://api.telegram.org/file/bot${token}/${filePatRes.data.result.file_path}`;
 
-        // Unique identifier item name for Internet Archive
         const iaItemName = `apklayer-assets-${Date.now()}`;
 
         // 2. Upload Logo to Internet Archive
@@ -140,9 +139,11 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Telegram Storage Server running on port ${PORT}`);
     const SERVER_URL = process.env.RENDER_EXTERNAL_URL || 'https://download-link-server.onrender.com';
+    
+    // Auto ping every 4 minutes (4 * 60 * 1000 ms) to keep server awake
     setInterval(() => {
         axios.get(`${SERVER_URL}/ping`)
             .then(() => console.log('Self-ping successful: Server is awake.'))
             .catch((err) => console.error('Self-ping failed:', err.message));
-    }, 14 * 60 * 1000);
+    }, 4 * 60 * 1000);
 });
