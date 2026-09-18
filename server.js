@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Multiple Telegram Accounts (Bari-bari se APK upload karne ke liye)
+// Multiple Telegram Accounts (Round-robin rotation)
 const TELEGRAM_ACCOUNTS = [
     {
         botToken: '8953260237:AAGeFUzkNOzhQ8dthA00K81cgXwI8ZqkY90',
@@ -33,12 +33,6 @@ const TELEGRAM_ACCOUNTS = [
         accountName: 'Telegram Account 2'
     }
 ];
-
-// Internet Archive Credentials (Logo aur Screenshots ke liye)
-const IA_ACCESS_KEY = 'JyyV5luXiOGFzTCX';
-const IA_SECRET_KEY = 'OLmzxUOSjra7c5Mh';
-
-const FIREBASE_DB_URL = "https://apk-layer-default-rtdb.firebaseio.com/apps.json";
 
 let currentAccountIndex = 0;
 
@@ -64,72 +58,53 @@ app.post('/api/upload-apk', upload.fields([
 
         if (!apkFile) return res.status(400).json({ success: false, error: "APK file missing" });
 
-        // 1. Upload APK to Current Telegram Account
-        const apkFormData = new FormData();
-        apkFormData.append('chat_id', chatId);
-        apkFormData.append('document', apkFile.buffer, apkFile.originalname);
+        // Helper function to upload any file (Document or Photo) to Telegram and get direct URL
+        const uploadToTelegram = async (file, isPhoto = false) => {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append(isPhoto ? 'photo' : 'document', file.buffer, file.originalname);
 
-        const apkRes = await axios.post(`https://api.telegram.org/bot${token}/sendDocument`, apkFormData, {
-            headers: apkFormData.getHeaders(),
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity
-        });
+            const endpoint = isPhoto ? 'sendPhoto' : 'sendDocument';
+            const response = await axios.post(`https://api.telegram.org/bot${token}/${endpoint}`, formData, {
+                headers: formData.getHeaders(),
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
+            });
 
-        if (!apkRes.data.ok) throw new Error("Telegram APK upload failed");
-        const doc = apkRes.data.result.document;
-        const filePatRes = await axios.get(`https://api.telegram.org/bot${token}/getFile?file_id=${doc.file_id}`);
-        const directDownloadUrl = `https://api.telegram.org/file/bot${token}/${filePatRes.data.result.file_path}`;
+            if (!response.data.ok) throw new Error("Telegram upload failed");
+            
+            const resultObj = isPhoto ? response.data.result.photo[response.data.result.photo.length - 1] : response.data.result.document;
+            const fileId = resultObj.file_id;
 
-        // Unique item name for Internet Archive assets
-        const iaItemName = `apklayer-assets-${Date.now()}`;
+            const pathRes = await axios.get(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+            return `https://api.telegram.org/file/bot${token}/${pathRes.data.result.file_path}`;
+        };
 
-        // 2. Upload Logo to Internet Archive
+        // 1. Upload APK to Telegram
+        const directDownloadUrl = await uploadToTelegram(apkFile, false);
+
+        // 2. Upload Logo to Telegram (as Photo)
         let logoUrl = "";
         if (logoFile) {
             try {
-                const logoFileName = `logo_${Date.now()}_${logoFile.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-                const iaLogoUrl = `https://s3.us.archive.org/${iaItemName}/${logoFileName}`;
-                
-                await axios.put(iaLogoUrl, logoFile.buffer, {
-                    headers: {
-                        'Authorization': `LOW ${IA_ACCESS_KEY}:${IA_SECRET_KEY}`,
-                        'x-amz-auto-create-bucket': 'true',
-                        'Content-Type': logoFile.mimetype
-                    },
-                    maxContentLength: Infinity,
-                    maxBodyLength: Infinity
-                });
-
-                logoUrl = `https://archive.org/download/${iaItemName}/${logoFileName}`;
-            } catch (logoErr) {
-                console.error("Internet Archive Logo Upload Error:", logoErr.message);
+                logoUrl = await uploadToTelegram(logoFile, true);
+            } catch (err) {
+                console.error("Logo Upload Error:", err.message);
             }
         }
 
-        // 3. Upload Screenshots to Internet Archive
+        // 3. Upload Screenshots to Telegram (as Photos)
         let screenshotsUrls = [];
-        for (let i = 0; i < screenshotFiles.length; i++) {
-            const sFile = screenshotFiles[i];
+        for (let sFile of screenshotFiles) {
             try {
-                const sFileName = `ss_${i}_${Date.now()}_${sFile.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-                const iaSSUrl = `https://s3.us.archive.org/${iaItemName}/${sFileName}`;
-
-                await axios.put(iaSSUrl, sFile.buffer, {
-                    headers: {
-                        'Authorization': `LOW ${IA_ACCESS_KEY}:${IA_SECRET_KEY}`,
-                        'x-amz-auto-create-bucket': 'true',
-                        'Content-Type': sFile.mimetype
-                    },
-                    maxContentLength: Infinity,
-                    maxBodyLength: Infinity
-                });
-
-                screenshotsUrls.push(`https://archive.org/download/${iaItemName}/${sFileName}`);
-            } catch (sErr) {
-                console.error("Internet Archive Screenshot Upload Error:", sErr.message);
+                const sUrl = await uploadToTelegram(sFile, true);
+                screenshotsUrls.push(sUrl);
+            } catch (err) {
+                console.error("Screenshot Upload Error:", err.message);
             }
         }
 
+        // Return links to client so it can save to Firebase and design the page
         res.json({
             success: true,
             downloadUrl: directDownloadUrl,
