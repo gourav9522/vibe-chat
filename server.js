@@ -3,9 +3,10 @@ const axios = require('axios');
 const cron = require('node-cron');
 const multer = require('multer');
 const FormData = require('form-data');
-const app = express();
-const upload = multer({ storage: multer.memoryStorage() });
+const cors = require('cors'); // <-- Yeh add karna hai
 
+const app = express();
+app.use(cors()); // <-- Yeh add karna hai taaki console se request block na ho
 app.use(express.json());
 
 const TELEGRAM_ACCOUNTS = [
