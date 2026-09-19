@@ -20,10 +20,9 @@ async def self_ping():
         if RENDER_EXTERNAL_URL:
             try:
                 async with httpx.AsyncClient() as client:
-                    response = await client.get(RENDER_EXTERNAL_URL)
-                    print(f"Self-ping sent: {response.status_code}")
-            except Exception as e:
-                print(f"Ping failed: {e}")
+                    await client.get(RENDER_EXTERNAL_URL)
+            except Exception:
+                pass
 
 @app.on_event("startup")
 async def startup_event():
@@ -31,45 +30,42 @@ async def startup_event():
         webhook_url = f"{RENDER_EXTERNAL_URL}/webhook"
         try:
             async with httpx.AsyncClient() as client:
-                res = await client.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
-                print(f"Webhook setup response: {res.text}")
-        except Exception as e:
-            print(f"Webhook setup failed: {e}")
-    
+                await client.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
+        except Exception:
+            pass
     asyncio.create_task(self_ping())
 
 @app.post("/webhook")
 async def telegram_webhook(request: dict):
     try:
-        print(f"Received webhook data: {request}")
         message = request.get("message", {}) or request.get("channel_post", {})
         chat_id = str(message.get("chat", {}).get("id", ""))
         
-        # Check if file exists in message
-        file_id = None
-        if "document" in message:
-            file_id = message["document"]["file_id"]
-        elif "video" in message:
-            file_id = message["video"]["file_id"]
-        elif "audio" in message:
-            file_id = message["audio"]["file_id"]
-            
-        if file_id:
-            async with httpx.AsyncClient() as client:
-                file_path_res = (await client.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}")).json()
-                print(f"Telegram getFile response: {file_path_res}")
-                if file_path_res.get("ok"):
-                    file_path = file_path_res["result"]["file_path"]
-                    direct_download_link = f"{RENDER_EXTERNAL_URL}/download/{file_path}"
-                    
-                    reply_text = f"🔥 **Direct Download Link Ready!**\n\n[Click Here to Download]({direct_download_link})"
-                    await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
-                        "chat_id": chat_id,
-                        "text": reply_text,
-                        "parse_mode": "Markdown"
-                    })
+        # Sirf apne target chat ya group/channel ki files allow karega
+        if not TARGET_CHAT_ID or chat_id == TARGET_CHAT_ID:
+            file_id = None
+            if "document" in message:
+                file_id = message["document"]["file_id"]
+            elif "video" in message:
+                file_id = message["video"]["file_id"]
+            elif "audio" in message:
+                file_id = message["audio"]["file_id"]
+                
+            if file_id and chat_id:
+                async with httpx.AsyncClient() as client:
+                    file_path_res = (await client.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}")).json()
+                    if file_path_res.get("ok"):
+                        file_path = file_path_res["result"]["file_path"]
+                        direct_download_link = f"{RENDER_EXTERNAL_URL}/download/{file_path}"
+                        
+                        reply_text = f"🔥 **Direct Download Link Ready!**\n\n[Click Here to Download]({direct_download_link})"
+                        await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
+                            "chat_id": chat_id,
+                            "text": reply_text,
+                            "parse_mode": "Markdown"
+                        })
     except Exception as e:
-        print(f"Error in webhook: {e}")
+        print(f"Error: {e}")
     return {"status": "ok"}
 
 @app.get("/")
