@@ -8,15 +8,15 @@ app = FastAPI()
 
 BOT_TOKEN = "8953260237:AAGeFUzkNOzhQ8dthA00K81cgXwI8ZqkY90"
 TARGET_CHAT_ID = "-1003935579226"
-RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL")
+RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://download-link-server.onrender.com")
 
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 TELEGRAM_FILE_URL = f"https://api.telegram.org/file/bot{BOT_TOKEN}"
 
-# Auto Ping Function jo har 4 minute mein khud ko request bhejega
+# Auto Ping Function jo har 4 minute (240 seconds) mein khud ko ping karega
 async def self_ping():
     while True:
-        await asyncio.sleep(240)  # 240 seconds = 4 minutes
+        await asyncio.sleep(240)
         if RENDER_EXTERNAL_URL:
             try:
                 async with httpx.AsyncClient() as client:
@@ -29,9 +29,13 @@ async def self_ping():
 async def startup_event():
     if RENDER_EXTERNAL_URL:
         webhook_url = f"{RENDER_EXTERNAL_URL}/webhook"
-        httpx.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
+        except Exception as e:
+            print(f"Webhook setup failed: {e}")
     
-    # Background task start karega jo server ko sone nahi dega
+    # Start background self-ping task
     asyncio.create_task(self_ping())
 
 @app.post("/webhook")
@@ -65,6 +69,10 @@ async def telegram_webhook(request: dict):
     except Exception as e:
         print(e)
     return {"status": "ok"}
+
+@app.get("/")
+def home():
+    return {"status": "Server is active and running!"}
 
 @app.get("/download/{file_path:path}")
 async def proxy_download(file_path: str):
