@@ -13,7 +13,7 @@ RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://download-link-se
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 TELEGRAM_FILE_URL = f"https://api.telegram.org/file/bot{BOT_TOKEN}"
 
-# Auto Ping Function jo har 4 minute (240 seconds) mein khud ko ping karega
+# Auto Ping Function
 async def self_ping():
     while True:
         await asyncio.sleep(240)
@@ -31,43 +31,45 @@ async def startup_event():
         webhook_url = f"{RENDER_EXTERNAL_URL}/webhook"
         try:
             async with httpx.AsyncClient() as client:
-                await client.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
+                res = await client.get(f"{TELEGRAM_API_URL}/setWebhook?url={webhook_url}")
+                print(f"Webhook setup response: {res.text}")
         except Exception as e:
             print(f"Webhook setup failed: {e}")
     
-    # Start background self-ping task
     asyncio.create_task(self_ping())
 
 @app.post("/webhook")
 async def telegram_webhook(request: dict):
     try:
+        print(f"Received webhook data: {request}")
         message = request.get("message", {}) or request.get("channel_post", {})
         chat_id = str(message.get("chat", {}).get("id", ""))
         
-        if chat_id == TARGET_CHAT_ID or str(message.get("from", {}).get("id", "")) == "8953260237":
-            file_id = None
-            if "document" in message:
-                file_id = message["document"]["file_id"]
-            elif "video" in message:
-                file_id = message["video"]["file_id"]
-            elif "audio" in message:
-                file_id = message["audio"]["file_id"]
-                
-            if file_id:
-                async with httpx.AsyncClient() as client:
-                    file_path_res = (await client.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}")).json()
-                    if file_path_res.get("ok"):
-                        file_path = file_path_res["result"]["file_path"]
-                        direct_download_link = f"{RENDER_EXTERNAL_URL}/download/{file_path}"
-                        
-                        reply_text = f"🔥 **Direct Download Link Ready!**\n\n[Click Here to Download]({direct_download_link})"
-                        await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
-                            "chat_id": chat_id,
-                            "text": reply_text,
-                            "parse_mode": "Markdown"
-                        })
+        # Check if file exists in message
+        file_id = None
+        if "document" in message:
+            file_id = message["document"]["file_id"]
+        elif "video" in message:
+            file_id = message["video"]["file_id"]
+        elif "audio" in message:
+            file_id = message["audio"]["file_id"]
+            
+        if file_id:
+            async with httpx.AsyncClient() as client:
+                file_path_res = (await client.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}")).json()
+                print(f"Telegram getFile response: {file_path_res}")
+                if file_path_res.get("ok"):
+                    file_path = file_path_res["result"]["file_path"]
+                    direct_download_link = f"{RENDER_EXTERNAL_URL}/download/{file_path}"
+                    
+                    reply_text = f"🔥 **Direct Download Link Ready!**\n\n[Click Here to Download]({direct_download_link})"
+                    await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
+                        "chat_id": chat_id,
+                        "text": reply_text,
+                        "parse_mode": "Markdown"
+                    })
     except Exception as e:
-        print(e)
+        print(f"Error in webhook: {e}")
     return {"status": "ok"}
 
 @app.get("/")
