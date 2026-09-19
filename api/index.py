@@ -8,7 +8,7 @@ app = FastAPI()
 # --- APNA BOT TOKEN AUR CHANNEL IDs YAHAN DAL DENA ---
 BOT_TOKEN = "8953260237:AAGeFUzkNOzhQ8dthA00K81cgXwI8ZqkY90"
 TARGET_CHAT_ID = "-1003935579226"
-BACKUP_ALERT_CHAT_ID = "-1003935579226"  # <-- Jab naya backup channel dena ho, yahan change kar dena
+BACKUP_ALERT_CHAT_ID = "-1003935579226"
 
 VERCEL_URL = os.getenv("VERCEL_URL", "download-link-server.vercel.app")
 
@@ -60,7 +60,7 @@ async def telegram_webhook(request: dict):
                             })
                         else:
                             alert_text = f"⚠️ **ALERT: Download Link Failed!**\n\n📦 **App Name:** {app_name}\n📢 **Channel ID:** {chat_id}\n❌ Status: Link is dead or expired!"
-                            await client.post(f"{TELEGRAM_API_URL}, json={
+                            await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
                                 "chat_id": BACKUP_ALERT_CHAT_ID,
                                 "text": alert_text,
                                 "parse_mode": "Markdown"
