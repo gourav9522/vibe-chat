@@ -1,6 +1,7 @@
 import os
 import httpx
 from fastapi import FastAPI, Response
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
@@ -59,7 +60,7 @@ async def telegram_webhook(request: dict):
                             })
                         else:
                             alert_text = f"⚠️ **ALERT: Download Link Failed!**\n\n📦 **App Name:** {app_name}\n📢 **Channel ID:** {chat_id}\n❌ Status: Link is dead or expired!"
-                            await client.post(f"{TELEGRAM_API_URL}/sendMessage", json={
+                            await client.post(f"{TELEGRAM_API_URL}, json={
                                 "chat_id": BACKUP_ALERT_CHAT_ID,
                                 "text": alert_text,
                                 "parse_mode": "Markdown"
@@ -81,6 +82,19 @@ def home():
 @app.get("/download/{file_path:path}")
 async def proxy_download(file_path: str):
     tg_file_url = f"{TELEGRAM_FILE_URL}/{file_path}"
-    client = httpx.AsyncClient()
+    client = httpx.AsyncClient(timeout=30.0)
     req = await client.get(tg_file_url, stream=True)
-    return Response(req.aiter_bytes(chunk_size=1024*1024), media_type=req.headers.get("content-type"))
+    
+    async def generate():
+        try:
+            async for chunk in req.aiter_bytes(chunk_size=1024*1024):
+                yield chunk
+        finally:
+            await req.aclose()
+            await client.aclose()
+
+    return StreamingResponse(
+        generate(),
+        media_type=req.headers.get("content-type", "application/octet-stream"),
+        headers={"Content-Disposition": f'attachment; filename="{file_path.split("/")[-1]}"'}
+    )
