@@ -8,14 +8,14 @@
     "theme_color": "#ec4899",
     "icons": [
         {
-            "src": "https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg",
-            "sizes": "192x192",
+            "src": "https://www.pwabuilder.com/assets/images/icon_512.png",
+            "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg",
-            "sizes": "512x512",
+            "src": "https://www.pwabuilder.com/assets/images/icon_192.png",
+            "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         }
