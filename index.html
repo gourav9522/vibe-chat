@@ -13,40 +13,31 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #310413); 
+            color: #f8fafc; 
+        }
         .hide { display: none !important; }
+        /* Custom scrollbar for horizontal lists */
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 4px; }
     </style>
 </head>
 <body class="h-screen flex flex-col justify-between overflow-hidden">
 
     <!-- 1. LOGIN SCREEN -->
     <div id="loginScreen" class="flex flex-col items-center justify-center h-full p-6 text-center overflow-y-auto">
-        <img src="https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg" class="w-20 h-20 rounded-3xl shadow-lg mb-4 object-cover shadow-indigo-500/30" alt="VibeChat Logo">
-        <h1 class="text-3xl font-bold mb-2">VibeChat</h1>
-        <p class="text-slate-400 mb-6 text-sm">Connect, match, and chat instantly.</p>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-pink-500/10 via-transparent to-transparent pointer-events-none"></div>
+        <img src="https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg" class="w-20 h-20 rounded-3xl shadow-lg mb-4 object-cover shadow-pink-500/30" alt="VibeChat Logo">
+        <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent">VibeChat</h1>
+        <p class="text-slate-400 mb-6 text-sm">Connect with hearts instantly.</p>
         
-        <div class="w-full max-w-sm space-y-4">
+        <div class="w-full max-w-sm space-y-4 z-10">
             <button onclick="loginWithGoogle()" class="w-full bg-white text-slate-900 font-semibold py-3.5 px-6 rounded-xl flex items-center justify-center space-x-3 shadow-md active:scale-95 transition-transform">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
                 <span>Continue with Google</span>
             </button>
-
-            <div class="flex items-center my-2">
-                <div class="flex-1 border-t border-slate-700"></div>
-                <span class="px-3 text-xs text-slate-500 uppercase">Or Phone OTP</span>
-                <div class="flex-1 border-t border-slate-700"></div>
-            </div>
-
-            <div id="phoneSection" class="space-y-3 text-left">
-                <input type="tel" id="phoneNumber" placeholder="+91 Mobile Number" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="sendOTP()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-3 rounded-xl text-white shadow-lg">Send OTP</button>
-            </div>
-
-            <div id="otpSection" class="space-y-3 text-left hide">
-                <input type="text" id="otpCode" placeholder="Enter 6-Digit OTP" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-semibold py-3 rounded-xl text-white shadow-lg">Verify & Login</button>
-            </div>
-            <div id="recaptcha-container"></div>
         </div>
     </div>
 
@@ -56,101 +47,120 @@
         <div class="w-full max-w-sm space-y-4 text-left">
             <div>
                 <label class="text-xs text-slate-400 mb-1 block">Profile Photo</label>
-                <input type="file" id="setupPhotoFile" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-sm text-slate-300">
+                <input type="file" id="setupPhotoFile" accept="image/*" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl p-2 text-sm text-slate-300">
             </div>
             <div>
                 <label class="text-xs text-slate-400 mb-1 block">Name</label>
-                <input type="text" id="setupName" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                <input type="text" id="setupName" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500">
             </div>
             <div>
-                <label class="text-xs text-slate-400 mb-1 block">Unique Username</label>
-                <input type="text" id="setupUsername" placeholder="e.g. rdx_gourav" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                <label class="text-xs text-slate-400 mb-1 block">Username</label>
+                <input type="text" id="setupUsername" placeholder="e.g. roxy_love" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500">
             </div>
             <div>
                 <label class="text-xs text-slate-400 mb-1 block">Gender</label>
-                <select id="setupGender" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                <select id="setupGender" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500">
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                 </select>
             </div>
-            <button onclick="saveProfileData()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-3.5 rounded-xl text-white shadow-lg">Save & Continue</button>
+            <button onclick="saveProfileData()" class="w-full bg-gradient-to-r from-pink-600 to-indigo-600 hover:opacity-90 font-semibold py-3.5 rounded-xl text-white shadow-lg">Save & Enter</button>
         </div>
     </div>
 
     <!-- 3. MAIN DASHBOARD -->
-    <div id="mainDashboard" class="flex flex-col h-full hide">
-        <header class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+    <div id="mainDashboard" class="flex flex-col h-full hide bg-slate-950/60 backdrop-blur-md">
+        <header class="p-4 bg-slate-900/80 border-b border-slate-800 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <button onclick="toggleSidebar(true)" id="headerProfileBtn" class="w-9 h-9 rounded-full bg-indigo-600 overflow-hidden flex items-center justify-center font-bold">P</button>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">VibeChat</h1>
+                <button onclick="toggleSidebar(true)" id="headerProfileBtn" class="w-9 h-9 rounded-full bg-pink-600 overflow-hidden flex items-center justify-center font-bold border border-pink-400">P</button>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent">VibeChat ❤️</h1>
             </div>
-            <div class="flex space-x-2">
-                <button onclick="switchTab('chats')" id="tabChatsBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Chats</button>
+            <div class="flex space-x-1">
+                <button onclick="switchTab('chats')" id="tabChatsBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-600 text-white shadow">Chats</button>
+                <button onclick="switchTab('home')" id="tabHomeBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400">Home</button>
                 <button onclick="switchTab('rooms')" id="tabRoomsBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400">Rooms</button>
                 <button onclick="switchTab('support')" id="tabSupportBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400">Support</button>
             </div>
         </header>
 
-        <!-- RANDOM MATCH BANNER -->
-        <div class="p-3 bg-gradient-to-r from-indigo-900 to-pink-900 border-b border-slate-800 flex justify-between items-center">
-            <div>
-                <h3 class="text-xs font-bold text-pink-300">Instant Match & Call</h3>
-                <p class="text-[10px] text-slate-300">Connect instantly with online users</p>
+        <!-- CHATS TAB (Shows only active chatted users) -->
+        <div id="chatsTabContent" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <input type="text" id="searchChatUser" oninput="searchChats()" placeholder="Search active chats..." class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white mb-2 focus:outline-none focus:border-pink-500">
+            <div id="activeChatList" class="space-y-2"></div>
+        </div>
+
+        <!-- HOME TAB (Online horizontal scroll + Rooms sections) -->
+        <div id="homeTabContent" class="flex-1 overflow-y-auto p-4 space-y-4 hide">
+            <!-- Instant Match Call Banner -->
+            <div class="p-3 bg-gradient-to-r from-pink-900/80 to-purple-900/80 border border-pink-500/30 rounded-2xl flex justify-between items-center shadow-lg">
+                <div>
+                    <h3 class="text-xs font-bold text-pink-300">💘 Instant Heart Match</h3>
+                    <p class="text-[10px] text-slate-300">Connect instantly with online vibes</p>
+                </div>
+                <div class="space-x-1">
+                    <button onclick="triggerRandomMatch('audio')" class="bg-emerald-600 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white">Audio</button>
+                    <button onclick="triggerRandomMatch('video')" class="bg-pink-600 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white">Video</button>
+                </div>
             </div>
-            <div class="space-x-1">
-                <button onclick="triggerRandomMatch('audio')" class="bg-emerald-600 px-3 py-1.5 rounded-lg text-xs font-semibold text-white shadow">Audio Call</button>
-                <button onclick="triggerRandomMatch('video')" class="bg-pink-600 px-3 py-1.5 rounded-lg text-xs font-semibold text-white shadow">Video Call</button>
+
+            <!-- Horizontal Right-to-Left Online Users Scroll -->
+            <div>
+                <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Online Users 🔥</h3>
+                <div id="horizontalOnlineList" class="flex space-x-3 overflow-x-auto pb-2 scroll-smooth" dir="rtl">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Public Rooms Section -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Rooms 🎤</h3>
+                    <button onclick="createRoom()" class="text-xs text-pink-400 font-bold">+ Create Room</button>
+                </div>
+                <div id="homeRoomsList" class="space-y-2"></div>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4">
-            <!-- CHATS TAB -->
-            <div id="chatsTabContent">
-                <input type="text" id="searchUser" oninput="searchUsers()" placeholder="Search by name, username or UID..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-indigo-500">
-                <div id="userList" class="space-y-2"></div>
-            </div>
+        <!-- ROOMS TAB -->
+        <div id="roomsTabContent" class="flex-1 overflow-y-auto p-4 space-y-3 hide">
+            <button onclick="createRoom()" class="w-full bg-gradient-to-r from-pink-600 to-indigo-600 text-white font-semibold py-3 rounded-xl shadow-md">+ Create Vibe Room</button>
+            <div id="roomsList" class="space-y-3"></div>
+        </div>
 
-            <!-- ROOMS TAB -->
-            <div id="roomsTabContent" class="hide">
-                <button onclick="createRoom()" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 text-white font-semibold py-3 rounded-xl mb-4 shadow-md">+ Create Random Room</button>
-                <div id="roomsList" class="space-y-3"></div>
-            </div>
-
-            <!-- SUPPORT TAB -->
-            <div id="supportTabContent" class="hide space-y-4 text-center p-4">
-                <h2 class="text-xl font-bold text-indigo-400">About VibeChat</h2>
-                <p class="text-xs text-slate-300 leading-relaxed">VibeChat is an advanced real-time social platform built for instant connections, secure messaging, live random calling, and public chat rooms. Enjoy media sharing, auto-deleting 7-day chat history, and seamless profile customization!</p>
-                <div class="p-3 bg-slate-800 rounded-xl text-left text-xs space-y-2">
-                    <p><strong>Developer:</strong> RDX Gourav</p>
-                    <p><strong>Features:</strong> End-to-End local storage safety, Quick Matching, Secure Media Storage.</p>
-                </div>
+        <!-- SUPPORT TAB -->
+        <div id="supportTabContent" class="flex-1 overflow-y-auto p-4 space-y-4 text-center hide">
+            <h2 class="text-xl font-bold text-pink-400">About VibeChat ❤️</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">VibeChat is your secure social destination for live matchmaking, heart-to-heart messaging, and interactive rooms. Designed with love and local storage safety!</p>
+            <div class="p-3 bg-slate-800/80 rounded-xl text-left text-xs space-y-2 border border-slate-700">
+                <p><strong>Developer:</strong> RDX Gourav</p>
+                <p><strong>Version:</strong> 2.6 Pro</p>
             </div>
         </div>
     </div>
 
     <!-- SIDEBAR PROFILE DRAWER -->
-    <div id="sidebarDrawer" class="fixed inset-0 bg-black/60 z-50 hide flex">
+    <div id="sidebarDrawer" class="fixed inset-0 bg-black/70 z-50 hide flex">
         <div class="w-72 bg-slate-900 h-full p-5 flex flex-col justify-between border-r border-slate-800">
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-lg">My Profile</h2>
+                    <h2 class="font-bold text-lg text-pink-400">My Profile ❤️</h2>
                     <button onclick="toggleSidebar(false)" class="text-slate-400 text-xl font-bold">&times;</button>
                 </div>
                 <div class="flex flex-col items-center text-center space-y-2">
-                    <img id="sidebarPhoto" src="" class="w-20 h-20 rounded-full object-cover border-2 border-indigo-500">
+                    <img id="sidebarPhoto" src="" class="w-20 h-20 rounded-full object-cover border-2 border-pink-500 shadow-md">
                     <h3 id="sidebarName" class="font-semibold text-md text-white"></h3>
-                    <p id="sidebarUsername" class="text-xs text-indigo-400"></p>
-                    <p id="sidebarUid" class="text-[10px] text-slate-500"></p>
+                    <p id="sidebarUsername" class="text-xs text-pink-400 font-medium"></p>
+                    <p id="sidebarUid" class="text-[10px] text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded"></p>
                 </div>
                 <div class="border-t border-slate-800 pt-3 space-y-2 text-xs">
-                    <div class="flex justify-between"><span>Followers:</span> <span id="statFollowers" class="font-bold">0</span></div>
-                    <div class="flex justify-between"><span>Following:</span> <span id="statFollowing" class="font-bold">0</span></div>
+                    <div class="flex justify-between"><span>Followers:</span> <span id="statFollowers" class="font-bold text-pink-400">0</span></div>
+                    <div class="flex justify-between"><span>Following:</span> <span id="statFollowing" class="font-bold text-pink-400">0</span></div>
                 </div>
                 <div class="border-t border-slate-800 pt-3 space-y-3">
                     <input type="text" id="editName" placeholder="Update Name" class="w-full bg-slate-800 p-2 rounded-lg text-xs text-white">
                     <input type="text" id="editUsername" placeholder="Update Username" class="w-full bg-slate-800 p-2 rounded-lg text-xs text-white">
-                    <button onclick="updateProfileInfo()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg text-xs font-semibold">Update Profile</button>
+                    <button onclick="updateProfileInfo()" class="w-full bg-pink-600 hover:bg-pink-500 py-2 rounded-lg text-xs font-semibold">Update Profile</button>
                 </div>
             </div>
             <button onclick="logoutApp()" class="w-full bg-rose-600 hover:bg-rose-500 py-2.5 rounded-xl text-xs font-semibold">Logout</button>
@@ -158,51 +168,61 @@
         <div class="flex-1" onclick="toggleSidebar(false)"></div>
     </div>
 
+    <!-- USER PROFILE VIEW MODAL (When clicking someone's ID) -->
+    <div id="userProfileModal" class="fixed inset-0 bg-black/80 z-50 hide flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl w-full max-w-xs text-center space-y-4 relative">
+            <button onclick="closeUserProfileModal()" class="absolute top-3 right-4 text-slate-400 text-xl font-bold">&times;</button>
+            <img id="modalUserPhoto" src="" class="w-24 h-24 rounded-full object-cover mx-auto border-2 border-pink-500 shadow-lg">
+            <div>
+                <h3 id="modalUserName" class="text-lg font-bold text-white"></h3>
+                <p id="modalUserUsername" class="text-xs text-pink-400 font-medium"></p>
+                <p id="modalUserUid" class="text-[10px] text-slate-400 font-mono mt-1"></p>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button id="modalFollowBtn" onclick="toggleFollowModalUser()" class="flex-1 bg-pink-600 py-2.5 rounded-xl font-semibold text-xs text-white">Follow</button>
+                <button onclick="messageModalUser()" class="flex-1 bg-indigo-600 py-2.5 rounded-xl font-semibold text-xs text-white">Message</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 4. CHAT WINDOW -->
-    <div id="chatWindow" class="flex flex-col h-full bg-slate-900 hide">
-        <div class="p-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+    <div id="chatWindow" class="flex flex-col h-full bg-slate-950 hide">
+        <div class="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <button onclick="closeChat()" class="text-slate-400 hover:text-white font-bold">&larr;</button>
+                <button onclick="closeChat()" class="text-slate-400 hover:text-white font-bold text-lg">&larr;</button>
                 <div class="flex items-center space-x-2">
-                    <div id="chatUserAvatar" class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold">U</div>
+                    <div id="chatUserAvatar" class="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center text-xs font-bold overflow-hidden">U</div>
                     <div>
-                        <h3 id="activeChatName" class="font-semibold text-xs">User Name</h3>
+                        <h3 id="activeChatName" class="font-semibold text-xs text-white">User Name</h3>
                         <span id="activeChatStatus" class="text-[10px] text-emerald-400">Online</span>
                     </div>
                 </div>
             </div>
             <div class="flex space-x-3">
-                <button onclick="startDirectCall('audio')" class="text-emerald-400 text-xs font-semibold">📞 Audio</button>
-                <button onclick="startDirectCall('video')" class="text-pink-400 text-xs font-semibold">📹 Video</button>
-                <button id="followBtn" onclick="toggleFollow()" class="bg-indigo-600 text-white px-2.5 py-1 rounded-lg text-[10px]">Follow</button>
+                <button onclick="startDirectCall('audio')" class="text-emerald-400 text-xs font-semibold">📞</button>
+                <button onclick="startDirectCall('video')" class="text-pink-400 text-xs font-semibold">📹</button>
             </div>
         </div>
 
         <div id="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
 
-        <!-- 3-SECOND TEMPORARY MESSAGE NOTIFICATION BAR -->
-        <div id="tempMsgToast" class="bg-indigo-900/90 border-t border-indigo-500 px-4 py-1.5 text-[11px] text-indigo-200 hide flex justify-between items-center">
-            <span id="tempMsgText">New message received...</span>
-            <span class="text-[9px] opacity-70">3s view</span>
-        </div>
-
-        <div class="p-3 bg-slate-800 border-t border-slate-700 flex items-center space-x-2">
+        <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center space-x-2">
             <input type="file" id="mediaInput" class="hide" onchange="sendMediaMessage(this)">
-            <button onclick="document.getElementById('mediaInput').click()" class="text-slate-400 hover:text-indigo-400 font-bold px-1">+</button>
-            <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
-            <button onclick="sendTextMessage()" class="bg-indigo-600 px-4 py-2 rounded-xl font-semibold text-xs">Send</button>
+            <button onclick="document.getElementById('mediaInput').click()" class="text-slate-400 hover:text-pink-400 font-bold px-1 text-lg">+</button>
+            <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+            <button onclick="sendTextMessage()" class="bg-pink-600 px-4 py-2 rounded-xl font-semibold text-xs text-white">Send</button>
         </div>
     </div>
 
-    <!-- INCOMING CALL / MATCH MODAL -->
+    <!-- INCOMING CALL MODAL -->
     <div id="callModal" class="fixed inset-0 bg-black/80 z-50 hide flex items-center justify-center p-6">
-        <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl w-full max-w-sm text-center space-y-4">
-            <div class="w-20 h-20 bg-indigo-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold animate-pulse" id="callCallerPhoto">R</div>
-            <h3 id="callCallerName" class="text-lg font-bold">Incoming Call...</h3>
-            <p id="callTypeLabel" class="text-xs text-slate-400">Incoming Audio/Video Call</p>
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl w-full max-w-sm text-center space-y-4 shadow-2xl">
+            <div class="w-20 h-20 bg-pink-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold animate-pulse overflow-hidden" id="callCallerPhoto">R</div>
+            <h3 id="callCallerName" class="text-lg font-bold text-white">Incoming Call...</h3>
+            <p id="callTypeLabel" class="text-xs text-slate-400">Incoming Call</p>
             <div class="flex space-x-4 pt-2">
-                <button onclick="rejectCall()" class="flex-1 bg-rose-600 py-3 rounded-xl font-semibold text-xs">Reject</button>
-                <button onclick="acceptCall()" class="flex-1 bg-emerald-600 py-3 rounded-xl font-semibold text-xs">Accept</button>
+                <button onclick="rejectCall()" class="flex-1 bg-rose-600 py-3 rounded-xl font-semibold text-xs text-white">Reject</button>
+                <button onclick="acceptCall()" class="flex-1 bg-emerald-600 py-3 rounded-xl font-semibold text-xs text-white">Accept</button>
             </div>
         </div>
     </div>
@@ -210,16 +230,16 @@
     <!-- ACTIVE LIVE CALL UI -->
     <div id="activeCallScreen" class="fixed inset-0 bg-slate-950 z-50 hide flex flex-col justify-between p-6 text-center">
         <div class="p-4 flex justify-between items-center">
-            <span id="callTimer" class="text-xs text-emerald-400 font-mono">00:00</span>
-            <h3 id="liveCallUser" class="text-sm font-bold">Connected Call</h3>
+            <span id="callTimer" class="text-xs text-emerald-400 font-mono">Connected</span>
+            <h3 id="liveCallUser" class="text-sm font-bold text-white">Live Call</h3>
         </div>
         <div class="flex-1 flex items-center justify-center">
-            <div class="w-32 h-32 bg-indigo-600/30 rounded-full flex items-center justify-center border-4 border-indigo-500 animate-spin">
-                <span class="text-3xl">🎙️</span>
+            <div class="w-32 h-32 bg-pink-600/20 rounded-full flex items-center justify-center border-4 border-pink-500 animate-spin">
+                <span class="text-3xl">💖</span>
             </div>
         </div>
         <div class="p-4 flex justify-center">
-            <button onclick="endActiveCall()" class="bg-rose-600 px-6 py-3 rounded-2xl font-bold text-sm">Disconnect Call</button>
+            <button onclick="endActiveCall()" class="bg-rose-600 px-6 py-3 rounded-2xl font-bold text-sm text-white">Disconnect Call</button>
         </div>
     </div>
 
@@ -243,64 +263,50 @@
         let currentUser = null;
         let userData = null;
         let currentChatUser = null;
-        let activeRoomId = null;
+        let modalTargetUser = null;
 
-        // Persistent Login Session Check
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+        // Generate random 7-letter numeric ID (e.g. 2756077)[span_1](start_span)[span_1](end_span)
+        function generateNumericUid() {
+            return Math.floor(1000000 + Math.random() * 9000000).toString();
+        }
+
+        // FAST LOCAL STORAGE LOAD (Zero login flicker if cached)
+        const cachedUser = localStorage.getItem('vibe_user_cache');
+        if(cachedUser) {
+            userData = JSON.parse(cachedUser);
+            // Quick auth check in background
             auth.onAuthStateChanged(user => {
-                if (user) {
+                if(user) { currentUser = user; initDashboard(); }
+            });
+            initDashboard();
+        } else {
+            auth.onAuthStateChanged(user => {
+                if(user) {
                     currentUser = user;
                     fetchUserData(user.uid);
                 } else {
                     document.getElementById('loginScreen').classList.remove('hide');
                 }
             });
-        });
+        }
 
         function loginWithGoogle() {
             auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message));
         }
 
         auth.getRedirectResult().then(res => {
-            if (res.user) { currentUser = res.user; fetchUserData(currentUser.uid); }
+            if(res.user) { currentUser = res.user; fetchUserData(currentUser.uid); }
         });
-
-        // Phone Authentication Setup
-        window.onload = function() {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size': 'invisible'}, auth);
-        };
-
-        function sendOTP() {
-            const phone = document.getElementById('phoneNumber').value;
-            if(!phone) return alert('Enter valid phone number');
-            auth.signInWithPhoneNumber(phone, window.recaptchaVerifier).then(result => {
-                window.confirmationResult = result;
-                document.getElementById('phoneSection').classList.add('hide');
-                document.getElementById('otpSection').classList.remove('hide');
-                alert('OTP Sent Successfully!');
-            }).catch(err => alert(err.message));
-        }
-
-        function verifyOTP() {
-            const code = document.getElementById('otpCode').value;
-            window.confirmationResult.confirm(code).then(res => {
-                currentUser = res.user;
-                fetchUserData(currentUser.uid);
-            }).catch(err => alert('Invalid OTP'));
-        }
 
         function fetchUserData(uid) {
             db.ref('users/' + uid).once('value', snapshot => {
                 if(snapshot.exists()) {
                     userData = snapshot.val();
-                    // Save to local storage for offline access
                     localStorage.setItem('vibe_user_cache', JSON.stringify(userData));
                     initDashboard();
                 } else {
-                    // Check local storage cache if offline
-                    const cached = localStorage.getItem('vibe_user_cache');
-                    if(cached) { userData = JSON.parse(cached); initDashboard(); }
-                    else { document.getElementById('loginScreen').classList.add('hide'); document.getElementById('profileScreen').classList.remove('hide'); }
+                    document.getElementById('loginScreen').classList.add('hide');
+                    document.getElementById('profileScreen').classList.remove('hide');
                 }
             });
         }
@@ -312,14 +318,15 @@
             const file = document.getElementById('setupPhotoFile').files[0];
 
             if(!name || !username) return alert('Fill all required fields');
+            const numericUid = generateNumericUid(); // 7-digit ID[span_2](start_span)[span_2](end_span)
 
             const saveToDb = (photoUrl) => {
                 const newUserData = {
-                    uid: currentUser.uid,
+                    uid: numericUid,
+                    authUid: currentUser.uid,
                     name: name,
                     username: username,
                     gender: gender,
-                    email: currentUser.email || currentUser.phoneNumber || '',
                     photo: photoUrl || 'https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg',
                     status: 'Online'
                 };
@@ -344,14 +351,15 @@
             document.getElementById('profileScreen').classList.add('hide');
             document.getElementById('mainDashboard').classList.remove('hide');
             
-            // Populate Sidebar
+            // Populate Sidebar & Header
             document.getElementById('sidebarPhoto').src = userData.photo;
             document.getElementById('sidebarName').innerText = userData.name;
             document.getElementById('sidebarUsername').innerText = '@' + userData.username;
-            document.getElementById('sidebarUid').innerText = 'UID: ' + userData.uid;
+            document.getElementById('sidebarUid').innerText = 'ID: ' + userData.uid;
             document.getElementById('headerProfileBtn').innerHTML = `<img src="${userData.photo}" class="w-full h-full object-cover">`;
 
-            loadUsersFeed();
+            loadOnlineUsersFeed();
+            loadActiveChats();
             loadRooms();
             listenToCalls();
             updatePresence('Online');
@@ -372,6 +380,8 @@
             const name = document.getElementById('editName').value || userData.name;
             const username = document.getElementById('editUsername').value || userData.username;
             db.ref('users/' + currentUser.uid).update({name, username}, () => {
+                userData.name = name; userData.username = username;
+                localStorage.setItem('vibe_user_cache', JSON.stringify(userData));
                 alert('Profile updated successfully!');
                 location.reload();
             });
@@ -383,55 +393,83 @@
         }
 
         function switchTab(tab) {
-            ['chats', 'rooms', 'support'].forEach(t => {
-                document.getElementById(t + 'TabContent').classList.add('hide');
-                document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn').className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400";
+            ['chats', 'home', 'rooms', 'support'].forEach(t => {
+                const el = document.getElementById(t + 'TabContent');
+                if(el) el.classList.add('hide');
+                const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+                if(btn) btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400";
             });
-            document.getElementById(tab + 'TabContent').classList.remove('hide');
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Btn').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white";
+            const targetEl = document.getElementById(tab + 'TabContent');
+            if(targetEl) targetEl.classList.remove('hide');
+            const targetBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Btn');
+            if(targetBtn) targetBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-600 text-white shadow";
         }
 
-        function loadUsersFeed() {
+        // HOME TAB: Horizontal right-to-left online users scroll + separate rooms
+        function loadOnlineUsersFeed() {
             db.ref('users').on('value', snapshot => {
-                const list = document.getElementById('userList');
-                list.innerHTML = '';
+                const horizontalList = document.getElementById('horizontalOnlineList');
+                horizontalList.innerHTML = '';
                 snapshot.forEach(child => {
                     const u = child.val();
-                    if(u.uid !== currentUser.uid) {
-                        // Gender priority logic: Male users see 90% females, Female users see males
-                        const isTargetGender = (userData.gender === 'Male' && u.gender === 'Female') || 
-                                               (userData.gender === 'Female' && u.gender === 'Male') || 
-                                               userData.gender === 'Other';
-                        
-                        list.innerHTML += `
-                            <div onclick="openChat('${u.uid}', '${u.name}', '${u.photo}')" class="p-3 bg-slate-800 rounded-xl flex items-center justify-between cursor-pointer hover:bg-slate-700">
-                                <div class="flex items-center space-x-3">
-                                    <img src="${u.photo}" class="w-10 h-10 rounded-full object-cover">
-                                    <div>
-                                        <h4 class="font-semibold text-sm">${u.name}</h4>
-                                        <p class="text-[10px] text-slate-400">@${u.username} • ${u.gender}</p>
-                                    </div>
+                    if(u.authUid !== currentUser.uid) {
+                        horizontalList.innerHTML += `
+                            <div onclick="openUserProfile('${u.authUid}', '${u.uid}', '${u.name}', '${u.username}', '${u.photo}')" class="flex-shrink-0 flex flex-col items-center cursor-pointer space-y-1 w-16">
+                                <div class="relative">
+                                    <img src="${u.photo}" class="w-14 h-14 rounded-full object-cover border-2 border-pink-500 shadow">
+                                    <span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full ${u.status === 'Online' ? 'bg-emerald-400' : 'bg-slate-500'} border-2 border-slate-900"></span>
                                 </div>
-                                <span class="w-2.5 h-2.5 rounded-full ${u.status === 'Online' ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+                                <span class="text-[10px] text-slate-300 truncate w-full text-center">${u.name}</span>
                             </div>`;
                     }
                 });
             });
         }
 
-        function searchUsers() {
-            const query = document.getElementById('searchUser').value.toLowerCase();
+        // CHATS TAB: Only shows users with whom chat history exists
+        function loadActiveChats() {
+            db.ref('users').on('value', userSnap => {
+                db.ref('chats').once('value', chatSnap => {
+                    const list = document.getElementById('activeChatList');
+                    list.innerHTML = '';
+                    userSnap.forEach(child => {
+                        const u = child.val();
+                        if(u.authUid !== currentUser.uid) {
+                            const chatId = [currentUser.authUid, u.authUid].sort().join('_');
+                            if(chatSnap.hasChild(chatId)) {
+                                list.innerHTML += `
+                                    <div onclick="openChat('${u.authUid}', '${u.name}', '${u.photo}')" class="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center justify-between cursor-pointer hover:border-pink-500/50">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="relative">
+                                                <img src="${u.photo}" class="w-11 h-11 rounded-full object-cover">
+                                                <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full ${u.status === 'Online' ? 'bg-emerald-400' : 'bg-slate-500'} border-2 border-slate-900"></span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-sm text-white">${u.name}</h4>
+                                                <p class="text-[10px] text-pink-400">@${u.username}</p>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        function searchChats() {
+            const query = document.getElementById('searchChatUser').value.toLowerCase();
             db.ref('users').once('value', snapshot => {
-                const list = document.getElementById('userList');
+                const list = document.getElementById('activeChatList');
                 list.innerHTML = '';
                 snapshot.forEach(child => {
                     const u = child.val();
-                    if(u.uid !== currentUser.uid && (u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query) || u.uid.includes(query))) {
+                    if(u.authUid !== currentUser.uid && (u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query) || u.uid.includes(query))) {
                         list.innerHTML += `
-                            <div onclick="openChat('${u.uid}', '${u.name}', '${u.photo}')" class="p-3 bg-slate-800 rounded-xl flex items-center justify-between cursor-pointer">
+                            <div onclick="openChat('${u.authUid}', '${u.name}', '${u.photo}')" class="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center justify-between cursor-pointer">
                                 <div class="flex items-center space-x-3">
-                                    <img src="${u.photo}" class="w-10 h-10 rounded-full object-cover">
-                                    <div><h4 class="font-semibold text-sm">${u.name}</h4><p class="text-[10px] text-slate-400">@${u.username}</p></div>
+                                    <img src="${u.photo}" class="w-11 h-11 rounded-full object-cover">
+                                    <div><h4 class="font-semibold text-sm text-white">${u.name}</h4><p class="text-[10px] text-pink-400">@${u.username} • ID: ${u.uid}</p></div>
                                 </div>
                             </div>`;
                     }
@@ -439,28 +477,73 @@
             });
         }
 
-        function openChat(uid, name, photo) {
-            currentChatUser = uid;
+        // USER PROFILE MODAL (Follow & Message options)
+        function openUserProfile(authUid, numericUid, name, username, photo) {
+            modalTargetUser = authUid;
+            document.getElementById('modalUserName').innerText = name;
+            document.getElementById('modalUserUsername').innerText = '@' + username;
+            document.getElementById('modalUserUid').innerText = 'ID: ' + numericUid;
+            document.getElementById('modalUserPhoto').src = photo;
+            document.getElementById('userProfileModal').classList.remove('hide');
+            checkFollowStatusForModal(authUid);
+        }
+
+        function closeUserProfileModal() {
+            document.getElementById('userProfileModal').classList.add('hide');
+        }
+
+        function toggleFollowModalUser() {
+            const ref = db.ref(`follows/${currentUser.authUid}/${modalTargetUser}`);
+            ref.once('value', snap => {
+                if(snap.exists()) {
+                    ref.remove();
+                    document.getElementById('modalFollowBtn').innerText = "Follow";
+                } else {
+                    ref.set(true);
+                    document.getElementById('modalFollowBtn').innerText = "Following";
+                }
+            });
+        }
+
+        function checkFollowStatusForModal(targetAuthUid) {
+            db.ref(`follows/${currentUser.authUid}/${targetAuthUid}`).once('value', snap => {
+                const btn = document.getElementById('modalFollowBtn');
+                if(snap.exists()) btn.innerText = "Following";
+                else btn.innerText = "Follow";
+            });
+        }
+
+        function messageModalUser() {
+            closeUserProfileModal();
+            db.ref('users').orderByChild('authUid').equalTo(modalTargetUser).once('value', snap => {
+                snap.forEach(child => {
+                    const u = child.val();
+                    openChat(u.authUid, u.name, u.photo);
+                });
+            });
+        }
+
+        function openChat(authUid, name, photo) {
+            currentChatUser = authUid;
             document.getElementById('activeChatName').innerText = name;
             document.getElementById('chatUserAvatar').innerHTML = `<img src="${photo}" class="w-full h-full rounded-full object-cover">`;
             document.getElementById('mainDashboard').classList.add('hide');
             document.getElementById('chatWindow').classList.remove('hide');
             loadMessages();
-            checkFollowStatus(uid);
         }
 
         function closeChat() {
             currentChatUser = null;
             document.getElementById('chatWindow').classList.add('hide');
             document.getElementById('mainDashboard').classList.remove('hide');
+            loadActiveChats();
         }
 
         function sendTextMessage() {
             const text = document.getElementById('messageInput').value;
             if(!text) return;
-            const chatId = [currentUser.uid, currentChatUser].sort().join('_');
-            const msgData = { sender: currentUser.uid, text: text, timestamp: Date.now(), seen: false };
-            db.ref('chats/' + chatId).push(msgData);
+            const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
+            db.ref('chats/' + chatId).push({ sender: currentUser.authUid, text: text, timestamp: Date.now() });
             document.getElementById('messageInput').value = '';
         }
 
@@ -469,140 +552,81 @@
             if(!file) return;
             storage.ref('media/' + Date.now() + '_' + file.name).put(file).then(snap => {
                 snap.ref.getDownloadURL().then(url => {
-                    const chatId = [currentUser.uid, currentChatUser].sort().join('_');
-                    const msgData = { sender: currentUser.uid, text: `<a href="${url}" download class="underline text-indigo-300">📥 Download Media</a>`, timestamp: Date.now(), seen: false };
-                    db.ref('chats/' + chatId).push(msgData);
+                    const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
+                    db.ref('chats/' + chatId).push({ sender: currentUser.authUid, text: `<a href="${url}" download class="underline text-pink-300">📥 Download File</a>`, timestamp: Date.now() });
                 });
             });
         }
 
         function loadMessages() {
-            const chatId = [currentUser.uid, currentChatUser].sort().join('_');
+            const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
             db.ref('chats/' + chatId).on('value', snapshot => {
                 const container = document.getElementById('messageContainer');
                 container.innerHTML = '';
                 const now = Date.now();
-                const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
                 snapshot.forEach(child => {
                     const m = child.val();
-                    if(now - m.timestamp < sevenDays) {
-                        const isMe = m.sender === currentUser.uid;
-                        if(!isMe && !m.seen) {
-                            child.ref.update({seen: true});
-                            showTempToast(m.text);
-                        }
+                    if(now - m.timestamp < 7 * 24 * 3600 * 1000) {
+                        const isMe = m.sender === currentUser.authUid;
                         container.innerHTML += `
                             <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                                <div class="max-w-xs p-3 rounded-2xl text-xs ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 rounded-bl-none'}">
+                                <div class="max-w-xs p-3 rounded-2xl text-xs ${isMe ? 'bg-pink-600 text-white rounded-br-none' : 'bg-slate-900 text-slate-200 rounded-bl-none border border-slate-800'}">
                                     ${m.text}
-                                    <div class="text-[9px] text-right mt-1 opacity-70">${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} ${isMe ? (m.seen ? '✓✓' : '✓') : ''}</div>
+                                    <div class="text-[9px] text-right mt-1 opacity-70">${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                                 </div>
                             </div>`;
-                    } else {
-                        child.ref.remove(); // 7-day auto delete
                     }
                 });
                 container.scrollTop = container.scrollHeight;
             });
         }
 
-        function showTempToast(txt) {
-            const toast = document.getElementById('tempMsgToast');
-            document.getElementById('tempMsgText').innerText = txt.replace(/<[^>]*>?/gm, '');
-            toast.classList.remove('hide');
-            setTimeout(() => toast.classList.add('hide'), 3000); // Instagram 3-second display
-        }
-
-        // Follow / Following system
-        function toggleFollow() {
-            const ref = db.ref(`follows/${currentUser.uid}/${currentChatUser}`);
-            ref.once('value', snap => {
-                if(snap.exists()) {
-                    ref.remove();
-                    document.getElementById('followBtn').innerText = "Follow";
-                    document.getElementById('followBtn').className = "bg-indigo-600 text-white px-2.5 py-1 rounded-lg text-[10px]";
-                } else {
-                    ref.set(true);
-                    document.getElementById('followBtn').innerText = "Following";
-                    document.getElementById('followBtn').className = "bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-[10px]";
-                }
-            });
-        }
-
-        function checkFollowStatus(uid) {
-            db.ref(`follows/${currentUser.uid}/${uid}`).once('value', snap => {
-                const btn = document.getElementById('followBtn');
-                if(snap.exists()) { btn.innerText = "Following"; btn.className = "bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-[10px]"; }
-                else { btn.innerText = "Follow"; btn.className = "bg-indigo-600 text-white px-2.5 py-1 rounded-lg text-[10px]"; }
-            });
-            // Update stats
-            db.ref(`follows/${uid}`).on('value', s => document.getElementById('statFollowers').innerText = s.numChildren());
-            db.ref(`follows/${currentUser.uid}`).on('value', s => document.getElementById('statFollowing').innerText = s.numChildren());
-        }
-
-        // Room management with auto title & creator exit deletion
+        // ROOMS MANAGEMENT
         function createRoom() {
-            const defaultTitle = `${userData.name}'s Vibe Room`;
-            const roomTitle = prompt("Enter Room Title:", defaultTitle);
-            if(!roomTitle) return;
-
-            const roomRef = db.ref('rooms').push();
-            roomRef.set({
-                id: roomRef.key,
-                title: roomTitle,
-                creator: currentUser.uid,
-                creatorName: userData.name,
-                timestamp: Date.now()
-            });
-            roomRef.onDisconnect().remove(); // Delete room if creator disconnects/exits
+            const title = prompt("Enter Room Title:", `${userData.name}'s Vibe Room`);
+            if(!title) return;
+            const ref = db.ref('rooms').push();
+            ref.set({ id: ref.key, title, creator: currentUser.authUid, creatorName: userData.name, timestamp: Date.now() });
+            ref.onDisconnect().remove();
             loadRooms();
         }
 
         function loadRooms() {
             db.ref('rooms').on('value', snapshot => {
                 const list = document.getElementById('roomsList');
-                list.innerHTML = '';
+                const homeList = document.getElementById('homeRoomsList');
+                if(list) list.innerHTML = '';
+                if(homeList) homeList.innerHTML = '';
                 snapshot.forEach(child => {
                     const r = child.val();
-                    list.innerHTML += `
-                        <div class="p-4 bg-slate-800 rounded-xl flex items-center justify-between">
-                            <div>
-                                <h4 class="font-semibold text-sm">${r.title}</h4>
-                                <p class="text-[10px] text-slate-400">Host: ${r.creatorName}</p>
-                            </div>
-                            <button onclick="alert('Joined room successfully!')" class="bg-indigo-600 px-3 py-1.5 rounded-lg text-xs font-semibold">Join Room</button>
+                    const html = `
+                        <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center justify-between">
+                            <div><h4 class="font-semibold text-sm text-white">${r.title}</h4><p class="text-[10px] text-slate-400">Host: ${r.creatorName}</p></div>
+                            <button onclick="alert('Joined room successfully!')" class="bg-pink-600 px-3 py-1.5 rounded-lg text-xs font-semibold text-white">Join</button>
                         </div>`;
+                    if(list) list.innerHTML += html;
+                    if(homeList) homeList.innerHTML += html;
                 });
             });
         }
 
-        // Random Call Matching
+        // RANDOM MATCH CALLING
         function triggerRandomMatch(type) {
             db.ref('users').once('value', snapshot => {
-                let targetUid = null;
+                let targetAuthUid = null;
                 snapshot.forEach(child => {
-                    if(child.val().uid !== currentUser.uid && child.val().status === 'Online') {
-                        targetUid = child.val().uid;
+                    if(child.val().authUid !== currentUser.authUid && child.val().status === 'Online') {
+                        targetAuthUid = child.val().authUid;
                     }
                 });
-                if(!targetUid) return alert('No online users available right now!');
-                
-                // Send call signal
-                db.ref('calls/' + targetUid).set({
-                    caller: currentUser.uid,
-                    callerName: userData.name,
-                    callerPhoto: userData.photo,
-                    type: type,
-                    status: 'ringing',
-                    timestamp: Date.now()
-                });
+                if(!targetAuthUid) return alert('No online users available right now!');
+                db.ref('calls/' + targetAuthUid).set({ caller: currentUser.authUid, callerName: userData.name, callerPhoto: userData.photo, type, status: 'ringing', timestamp: Date.now() });
                 alert('Calling random online user...');
             });
         }
 
         function listenToCalls() {
-            db.ref('calls/' + currentUser.uid).on('value', snap => {
+            db.ref('calls/' + currentUser.authUid).on('value', snap => {
                 const call = snap.val();
                 if(call && call.status === 'ringing') {
                     document.getElementById('callCallerName').innerText = call.callerName;
@@ -617,29 +641,21 @@
         function acceptCall() {
             document.getElementById('callModal').classList.add('hide');
             document.getElementById('activeCallScreen').classList.remove('hide');
-            document.getElementById('liveCallUser').innerText = window.currentIncomingCall.callerName;
-            db.ref('calls/' + currentUser.uid + '/status').set('accepted');
+            db.ref('calls/' + currentUser.authUid + '/status').set('accepted');
         }
 
         function rejectCall() {
             document.getElementById('callModal').classList.add('hide');
-            db.ref('calls/' + currentUser.uid).remove();
+            db.ref('calls/' + currentUser.authUid).remove();
         }
 
         function endActiveCall() {
             document.getElementById('activeCallScreen').classList.add('hide');
-            db.ref('calls/' + currentUser.uid).remove();
+            db.ref('calls/' + currentUser.authUid).remove();
         }
 
         function startDirectCall(type) {
-            db.ref('calls/' + currentChatUser).set({
-                caller: currentUser.uid,
-                callerName: userData.name,
-                callerPhoto: userData.photo,
-                type: type,
-                status: 'ringing',
-                timestamp: Date.now()
-            });
+            db.ref('calls/' + currentChatUser).set({ caller: currentUser.authUid, callerName: userData.name, callerPhoto: userData.photo, type, status: 'ringing', timestamp: Date.now() });
             document.getElementById('activeCallScreen').classList.remove('hide');
         }
     </script>
