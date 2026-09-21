@@ -19,24 +19,42 @@
 </head>
 <body class="h-screen flex flex-col justify-between overflow-hidden">
 
-    <!-- TOP POPUP NOTIFICATION -->
-    <div id="topPopup" class="fixed top-4 left-4 right-4 bg-slate-800 border border-slate-700 p-3 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 -translate-y-24 z-50">
-        <div id="popupAvatar" class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">VC</div>
-        <div class="flex-1 overflow-hidden">
-            <h4 id="popupTitle" class="text-sm font-semibold text-indigo-400">Sender Name</h4>
-            <p id="popupText" class="text-xs text-slate-300 truncate">New message text here...</p>
-        </div>
-    </div>
-
     <!-- 1. LOGIN SCREEN -->
-    <div id="loginScreen" class="flex flex-col items-center justify-center h-full p-6 text-center">
-        <img src="https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg" class="w-20 h-20 rounded-3xl shadow-lg mb-6 object-cover shadow-indigo-500/30" alt="VibeChat Logo">
+    <div id="loginScreen" class="flex flex-col items-center justify-center h-full p-6 text-center overflow-y-auto">
+        <img src="https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg" class="w-20 h-20 rounded-3xl shadow-lg mb-4 object-cover shadow-indigo-500/30" alt="VibeChat Logo">
         <h1 class="text-3xl font-bold mb-2">VibeChat</h1>
-        <p class="text-slate-400 mb-8 text-sm">Connect with friends, chat privately, and join random rooms instantly.</p>
-        <button onclick="loginWithGoogle()" class="w-full max-w-sm bg-white text-slate-900 font-semibold py-3.5 px-6 rounded-xl flex items-center justify-center space-x-3 shadow-md active:scale-95 transition-transform">
-            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-            <span>Continue with Google</span>
-        </button>
+        <p class="text-slate-400 mb-6 text-sm">Login with Google or Mobile Number to start chatting.</p>
+        
+        <div class="w-full max-w-sm space-y-4">
+            <!-- Google Login -->
+            <button onclick="loginWithGoogle()" class="w-full bg-white text-slate-900 font-semibold py-3.5 px-6 rounded-xl flex items-center justify-center space-x-3 shadow-md active:scale-95 transition-transform">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Continue with Google</span>
+            </button>
+
+            <div class="flex items-center my-2">
+                <div class="flex-1 border-t border-slate-700"></div>
+                <span class="px-3 text-xs text-slate-500 uppercase">Or Phone OTP</span>
+                <div class="flex-1 border-t border-slate-700"></div>
+            </div>
+
+            <!-- Phone Number Input Section -->
+            <div id="phoneSection" class="space-y-3 text-left">
+                <label class="text-xs text-slate-400 block">Mobile Number (with +91)</label>
+                <input type="tel" id="phoneNumber" placeholder="+91 9876543210" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <button onclick="sendOTP()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-3 rounded-xl text-white shadow-lg transition-all">Send OTP</button>
+            </div>
+
+            <!-- OTP Verification Section (Hidden Initially) -->
+            <div id="otpSection" class="space-y-3 text-left hide">
+                <label class="text-xs text-slate-400 block">Enter 6-Digit OTP</label>
+                <input type="text" id="otpCode" placeholder="123456" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-semibold py-3 rounded-xl text-white shadow-lg transition-all">Verify & Login</button>
+            </div>
+            
+            <!-- Hidden container for reCAPTCHA -->
+            <div id="recaptcha-container"></div>
+        </div>
     </div>
 
     <!-- 2. PROFILE SETUP SCREEN -->
@@ -128,8 +146,9 @@
 
         let currentUser = null;
         let currentChatUser = null;
+        let confirmationResultObj = null;
 
-        // Persistent Login setup using LocalStorage persistence
+        // Persistent Login setup
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
             auth.onAuthStateChanged(user => {
                 if (user) {
@@ -141,13 +160,12 @@
             });
         }).catch(error => console.error(error));
 
-        // Using redirect method instead of popup to support AppCreator24 WebView perfectly
+        // 1. Google Login (Redirect method for webview support)
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithRedirect(provider).catch(error => alert(error.message));
         }
 
-        // Handle redirect result back into app
         auth.getRedirectResult().then((result) => {
             if (result.user) {
                 currentUser = result.user;
@@ -156,6 +174,41 @@
         }).catch((error) => {
             console.error(error);
         });
+
+        // 2. Phone Number OTP Setup
+        window.onload = function() {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible'
+            }, auth);
+        };
+
+        function sendOTP() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if(!phoneNumber) return alert('Please enter mobile number with country code (e.g. +91...)');
+
+            const appVerifier = window.recaptchaVerifier;
+            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    confirmationResultObj = confirmationResult;
+                    document.getElementById('phoneSection').classList.add('hide');
+                    document.getElementById('otpSection').classList.remove('hide');
+                    alert('OTP sent successfully!');
+                }).catch((error) => {
+                    alert('Error sending OTP: ' + error.message);
+                });
+        }
+
+        function verifyOTP() {
+            const code = document.getElementById('otpCode').value;
+            if(!code) return alert('Please enter the OTP code');
+
+            confirmationResultObj.confirm(code).then((result) => {
+                currentUser = result.user;
+                checkUserProfile(currentUser.uid);
+            }).catch((error) => {
+                alert('Incorrect OTP: ' + error.message);
+            });
+        }
 
         function checkUserProfile(uid) {
             db.ref('users/' + uid).once('value', snapshot => {
@@ -181,7 +234,7 @@
                 uid: currentUser.uid,
                 name: name,
                 gender: gender,
-                email: currentUser.email,
+                email: currentUser.email || currentUser.phoneNumber || 'N/A',
                 photo: currentUser.photoURL || ''
             }, () => {
                 location.reload();
@@ -261,10 +314,6 @@
 
             db.ref('chats/' + chatId).push(messageData);
             document.getElementById('messageInput').value = '';
-            
-            let localChat = JSON.parse(localStorage.getItem(chatId) || '[]');
-            localChat.push(messageData);
-            localStorage.setItem(chatId, JSON.stringify(localChat));
         }
 
         function loadMessages() {
