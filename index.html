@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* Pink, Blue, Gold Background Animated Design with Dating Heart Animation */
         .vibe-bg-glow {
             position: absolute;
             inset: 0;
@@ -295,32 +294,42 @@
 
         function generateNumericUid() { return Math.floor(1000000 + Math.random() * 9000000).toString(); }
 
-        const cachedUser = localStorage.getItem('vibe_user_cache');
-        if(cachedUser) {
-            userData = JSON.parse(cachedUser);
-            auth.onAuthStateChanged(user => { if(user) currentUser = user; });
-            initDashboard();
-        } else {
+        // Set Auth Persistence to Local to avoid blank screen on reload
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
             auth.onAuthStateChanged(user => {
-                if(user) { currentUser = user; fetchUserData(user.uid); }
-                else document.getElementById('loginScreen').classList.remove('hide');
+                if(user) {
+                    currentUser = user;
+                    fetchUserData(user.uid);
+                } else {
+                    document.getElementById('loginScreen').classList.remove('hide');
+                }
+            });
+        }).catch(err => {
+            console.error("Persistence error: ", err);
+        });
+
+        // Fixed Google Login using signInWithRedirect for WebView compatibility (Prevents network-request-failed & blank screen)
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithRedirect(provider).catch(err => {
+                alert("Login Error: " + err.message);
             });
         }
 
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithPopup(provider).then((res) => {
+        // Handle redirect result when user returns back from Google Sign-In page
+        auth.getRedirectResult().then((res) => {
+            if(res.user) {
                 currentUser = res.user;
                 fetchUserData(currentUser.uid);
-            }).catch(err => alert(err.message));
-        }
+            }
+        }).catch(err => {
+            console.error("Redirect Error:", err);
+        });
 
         function fetchUserData(uid) {
             db.ref('users/' + uid).once('value', snapshot => {
                 if(snapshot.exists()) {
                     userData = snapshot.val();
-                    localStorage.setItem('vibe_user_cache', JSON.stringify(userData));
                     initDashboard();
                 } else {
                     document.getElementById('loginScreen').classList.add('hide');
@@ -339,13 +348,12 @@
             const proceed = (photoUrl) => {
                 userData = { uid: numericUid, authUid: currentUser.uid, name, username, photo: photoUrl || '', status: 'Online' };
                 db.ref('users/' + currentUser.uid).set(userData, () => {
-                    localStorage.setItem('vibe_user_cache', JSON.stringify(userData));
-                    location.reload();
+                    initDashboard();
                 });
             };
 
             if(file) {
-                storage.ref('profiles/' + currentUser.uid).put(file).then(s => s.ref.getDownloadURL().then(proceed));
+                storage.ref('profiles/' + currentUser.uid).put(file).then(s => s.ref.getDownloadURL().then(proceed)).catch(() => proceed('https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg'));
             } else proceed('https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg');
         }
 
@@ -355,7 +363,6 @@
             storage.ref('profiles/' + currentUser.uid).put(file).then(s => s.ref.getDownloadURL().then(url => {
                 db.ref('users/' + currentUser.uid + '/photo').set(url, () => {
                     userData.photo = url;
-                    localStorage.setItem('vibe_user_cache', JSON.stringify(userData));
                     document.getElementById('sidebarPhoto').src = url;
                     alert('Profile photo updated successfully!');
                 });
@@ -366,7 +373,7 @@
             document.getElementById('loginScreen').classList.add('hide');
             document.getElementById('profileScreen').classList.add('hide');
             document.getElementById('mainDashboard').classList.remove('hide');
-            document.getElementById('sidebarPhoto').src = userData.photo;
+            document.getElementById('sidebarPhoto').src = userData.photo || 'https://archive.org/download/vibe_20260921/image_f8fcaf71~3.jpg';
             document.getElementById('sidebarName').innerText = userData.name;
             document.getElementById('sidebarUsername').innerText = '@' + userData.username;
             document.getElementById('sidebarUid').innerText = 'ID: ' + userData.uid;
@@ -529,7 +536,6 @@
             });
         }
 
-        // Direct Message Button with Auto-Greeting on first message
         function messageModalUser() {
             closeUserProfileModal();
             db.ref('users/' + modalTargetUser).once('value', s => {
@@ -548,7 +554,6 @@
             const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
             db.ref('chats/' + chatId).once('value', snap => {
                 if(!snap.exists()) {
-                    // Send auto greeting "Hi!" on first time chat
                     db.ref('chats/' + chatId).push({ sender: currentUser.authUid, text: "Hi!", timestamp: Date.now() });
                 }
                 loadMessages();
@@ -603,7 +608,6 @@
             openRoomView(title, criteria, type);
         }
 
-        // Camera & Microphone Permission Handling with Settings Redirect
         function openRoomView(title, criteria, type) {
             document.getElementById('viewRoomTitle').innerText = title;
             document.getElementById('viewRoomCriteria').innerText = "Criteria: " + (criteria || "General rules");
@@ -617,14 +621,12 @@
                         document.getElementById('localVideoElement').srcObject = stream;
                     }
                 }).catch(() => {
-                    // Show Permission Modal with direct Device Settings Option
                     document.getElementById('permissionModal').classList.remove('hide');
                 });
             }
         }
 
         function openDeviceSettings() {
-            // Opens browser/device application settings URI scheme when supported, or fallback alert
             window.location.href = "content-settings://";
             setTimeout(() => {
                 window.open("app-settings:", "_blank");
