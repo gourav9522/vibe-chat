@@ -6,7 +6,7 @@
     <title>VibeChat</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs (Compat version for easy single-file setup) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -19,7 +19,7 @@
 </head>
 <body class="h-screen flex flex-col justify-between overflow-hidden">
 
-    <!-- TOP POPUP NOTIFICATION (Instagram Style) -->
+    <!-- TOP POPUP NOTIFICATION -->
     <div id="topPopup" class="fixed top-4 left-4 right-4 bg-slate-800 border border-slate-700 p-3 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 -translate-y-24 z-50">
         <div id="popupAvatar" class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">VC</div>
         <div class="flex-1 overflow-hidden">
@@ -60,9 +60,8 @@
         </div>
     </div>
 
-    <!-- 3. MAIN DASHBOARD (Chats & Rooms) -->
+    <!-- 3. MAIN DASHBOARD -->
     <div id="mainDashboard" class="flex flex-col h-full hide">
-        <!-- Header -->
         <header class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
             <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">VibeChat</h1>
             <div class="flex space-x-2">
@@ -71,22 +70,15 @@
             </div>
         </header>
 
-        <!-- Content Area -->
         <div class="flex-1 overflow-y-auto p-4">
-            <!-- CHATS TAB -->
             <div id="chatsTabContent">
-                <input type="text" id="searchUser" oninput="searchUsers()" placeholder="Search user ID or name..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-indigo-500">
-                <div id="userList" class="space-y-2">
-                    <!-- Dynamic Users List -->
-                </div>
+                <input type="text" id="searchUser" oninput="searchUsers()" placeholder="Search user name..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-indigo-500">
+                <div id="userList" class="space-y-2"></div>
             </div>
 
-            <!-- ROOMS TAB -->
             <div id="roomsTabContent" class="hide">
                 <button onclick="createRoom()" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 text-white font-semibold py-3 rounded-xl mb-4 shadow-md">+ Create Random Room</button>
-                <div id="roomsList" class="space-y-3">
-                    <!-- Dynamic Rooms List -->
-                </div>
+                <div id="roomsList" class="space-y-3"></div>
             </div>
         </div>
     </div>
@@ -105,9 +97,7 @@
             </div>
         </div>
 
-        <div id="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
-            <!-- Messages load here -->
-        </div>
+        <div id="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
 
         <div class="p-3 bg-slate-800 border-t border-slate-700 flex items-center space-x-2">
             <input type="file" id="mediaInput" class="hide" onchange="sendMedia(this)">
@@ -121,7 +111,6 @@
 
     <!-- SCRIPT LOGIC -->
     <script>
-        // Firebase Configuration (Provided by user)
         const firebaseConfig = {
             apiKey: "AIzaSyDj-2kVhmOOsYxKp9ChB2ATmJMiQvPysrA",
             authDomain: "vibe-chat-ee27e.firebaseapp.com",
@@ -140,20 +129,33 @@
         let currentUser = null;
         let currentChatUser = null;
 
-        // Auth state persistence check
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                checkUserProfile(user.uid);
-            } else {
-                document.getElementById('loginScreen').classList.remove('hide');
-            }
-        });
+        // Persistent Login setup using LocalStorage persistence
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    checkUserProfile(user.uid);
+                } else {
+                    document.getElementById('loginScreen').classList.remove('hide');
+                }
+            });
+        }).catch(error => console.error(error));
 
+        // Using redirect method instead of popup to support AppCreator24 WebView perfectly
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => alert(error.message));
+            auth.signInWithRedirect(provider).catch(error => alert(error.message));
         }
+
+        // Handle redirect result back into app
+        auth.getRedirectResult().then((result) => {
+            if (result.user) {
+                currentUser = result.user;
+                checkUserProfile(currentUser.uid);
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
 
         function checkUserProfile(uid) {
             db.ref('users/' + uid).once('value', snapshot => {
@@ -260,7 +262,6 @@
             db.ref('chats/' + chatId).push(messageData);
             document.getElementById('messageInput').value = '';
             
-            // Local storage backup
             let localChat = JSON.parse(localStorage.getItem(chatId) || '[]');
             localChat.push(messageData);
             localStorage.setItem(chatId, JSON.stringify(localChat));
@@ -276,7 +277,6 @@
 
                 snapshot.forEach(child => {
                     const msg = child.val();
-                    // 7-day auto delete check on cloud display
                     if(now - msg.timestamp < sevenDaysMs) {
                         const isMe = msg.sender === currentUser.uid;
                         container.innerHTML += `
@@ -287,7 +287,6 @@
                                 </div>
                             </div>`;
                     } else {
-                        // Delete from firebase if older than 7 days
                         child.ref.remove();
                     }
                 });
