@@ -40,7 +40,7 @@
 </head>
 <body class="h-screen flex flex-col justify-between overflow-hidden relative">
 
-    <!-- GLOW & BACKGROUND LOVER HEARTS ANIMATION -->
+    <!-- GLOBAL GLOW & BACKGROUND LOVER HEARTS ANIMATION -->
     <div class="vibe-bg-glow"></div>
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div class="floating-heart-bg text-3xl" style="top: 15%; left: 10%; animation-delay: 0s;">💖</div>
@@ -116,7 +116,7 @@
             <!-- HOME TAB -->
             <div id="homeTabContent" class="absolute inset-0 overflow-y-auto p-4 space-y-4">
                 <div>
-                    <h3 class="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Online Users 🔥</h3>
+                    <h3 class="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Users 🔥</h3>
                     <div id="horizontalOnlineList" class="flex space-x-3 overflow-x-auto pb-2 scroll-smooth" dir="rtl"></div>
                 </div>
                 <div>
@@ -125,10 +125,10 @@
                 </div>
             </div>
 
-            <!-- SEARCH TAB (Username & ID Search Fix) -->
+            <!-- SEARCH TAB (Username Search) -->
             <div id="searchTabContent" class="absolute inset-0 overflow-y-auto p-4 space-y-3 hide">
                 <div class="relative">
-                    <input type="text" id="globalSearchInput" oninput="searchAllUsers()" placeholder="Search by Username or Unique ID..." class="w-full bg-slate-900 border-2 border-pink-500 rounded-xl px-4 py-3 text-sm text-white placeholder-pink-300/60 shadow-[0_0_15px_rgba(236,72,153,0.3)] focus:outline-none focus:border-amber-400">
+                    <input type="text" id="globalSearchInput" oninput="searchAllUsers()" placeholder="Search by Username or Name..." class="w-full bg-slate-900 border-2 border-pink-500 rounded-xl px-4 py-3 text-sm text-white placeholder-pink-300/60 shadow-[0_0_15px_rgba(236,72,153,0.3)] focus:outline-none focus:border-amber-400">
                     <span class="absolute right-4 top-3.5 text-amber-400 font-bold">🔍</span>
                 </div>
                 <div id="globalSearchResultContainer" class="space-y-2"></div>
@@ -218,7 +218,6 @@
                     <h3 id="sidebarName" class="font-semibold text-md text-white"></h3>
                     <p id="sidebarUsername" class="text-xs text-pink-400 font-medium"></p>
                     <p id="sidebarGender" class="text-[10px] text-slate-300"></p>
-                    <p id="sidebarUid" class="text-[10px] text-slate-400 font-mono bg-black px-2 py-0.5 rounded"></p>
                 </div>
                 <button onclick="openEditProfileModal()" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-semibold text-pink-400 border border-pink-500/40">✏️ Edit Profile</button>
                 <div class="flex justify-around py-3 bg-black/50 rounded-2xl border border-slate-800">
@@ -263,7 +262,6 @@
                 <h3 id="modalUserName" class="text-lg font-bold text-white"></h3>
                 <p id="modalUserUsername" class="text-xs text-pink-400 font-medium"></p>
                 <p id="modalUserGender" class="text-[11px] text-slate-300 mt-0.5"></p>
-                <p id="modalUserUid" class="text-[10px] text-slate-400 font-mono mt-1"></p>
             </div>
             <div class="flex justify-around py-2 bg-black/40 rounded-xl border border-slate-800 text-xs">
                 <span id="modalFollowersCount" class="text-slate-300"><b>0</b> Followers</span>
@@ -333,43 +331,27 @@
         let localStream = null;
         let notifTimeout = null;
 
-        function generateNumericUid() { return Math.floor(1000000 + Math.random() * 9000000).toString(); }
-
-        const cachedUser = localStorage.getItem('vibe_local_user');
-        if(cachedUser) {
-            userData = JSON.parse(cachedUser);
-            document.getElementById('loginScreen').classList.add('hide');
-            initDashboard();
-        }
-
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
-            auth.onAuthStateChanged(user => {
-                if(user) {
-                    currentUser = user;
-                    fetchUserData(user.uid);
-                } else if(!cachedUser) {
-                    document.getElementById('loginScreen').classList.remove('hide');
-                }
-            });
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                currentUser = user;
+                fetchUserData(user.uid);
+            } else {
+                document.getElementById('loginScreen').classList.remove('hide');
+            }
         });
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithRedirect(provider).catch(err => alert("Login Error: " + err.message));
-        }
-
-        auth.getRedirectResult().then((res) => {
-            if(res.user) {
+            auth.signInWithPopup(provider).then((res) => {
                 currentUser = res.user;
                 fetchUserData(currentUser.uid);
-            }
-        });
+            }).catch(err => alert("Login Error: " + err.message));
+        }
 
         function fetchUserData(uid) {
             db.ref('users/' + uid).once('value', snapshot => {
                 if(snapshot.exists()) {
                     userData = snapshot.val();
-                    localStorage.setItem('vibe_local_user', JSON.stringify(userData));
                     initDashboard();
                 } else {
                     document.getElementById('loginScreen').classList.add('hide');
@@ -379,7 +361,7 @@
         }
 
         function saveProfileData() {
-            const name = document.getElementById('setupName').value;
+            const name = document.getElementById('setupName').value.trim();
             const username = document.getElementById('setupUsername').value.toLowerCase().trim();
             const gender = document.getElementById('setupGender').value;
             const file = document.getElementById('setupPhotoFile').files[0];
@@ -390,11 +372,9 @@
                     alert('Username already taken! Choose another.');
                     return;
                 }
-                const numericUid = generateNumericUid();
                 const proceed = (photoUrl) => {
-                    userData = { uid: numericUid, authUid: currentUser.uid, name, username, gender, photo: photoUrl || '', status: 'Online' };
+                    userData = { authUid: currentUser.uid, name, username, gender, photo: photoUrl || '', status: 'Online' };
                     db.ref('users/' + currentUser.uid).set(userData, () => {
-                        localStorage.setItem('vibe_local_user', JSON.stringify(userData));
                         initDashboard();
                     });
                 };
@@ -413,10 +393,9 @@
             document.getElementById('sidebarName').innerText = userData.name;
             document.getElementById('sidebarUsername').innerText = '@' + userData.username;
             document.getElementById('sidebarGender').innerText = 'Gender: ' + (userData.gender || 'Not specified');
-            document.getElementById('sidebarUid').innerText = 'ID: ' + userData.uid;
             document.getElementById('headerProfileBtn').innerHTML = `<img src="${userData.photo}" class="w-full h-full object-cover">`;
 
-            loadFollowCounts(currentUser.authUid, 'sidebarFollowersCount', 'sidebarFollowingCount');
+            loadFollowCounts(currentUser.uid, 'sidebarFollowersCount', 'sidebarFollowingCount');
             loadAllUsersOnHome();
             loadRooms();
             listenToIncomingMessagesGlobally();
@@ -441,7 +420,6 @@
                 userData.name = newName;
                 if(photoUrl) userData.photo = photoUrl;
                 db.ref('users/' + currentUser.uid).update(userData, () => {
-                    localStorage.setItem('vibe_local_user', JSON.stringify(userData));
                     document.getElementById('editProfileModal').classList.add('hide');
                     initDashboard();
                     alert('Profile updated successfully!');
@@ -470,9 +448,9 @@
                 list.innerHTML = '';
                 snap.forEach(c => {
                     const u = c.val();
-                    if(u.authUid !== currentUser.authUid) {
+                    if(u.authUid !== currentUser.uid) {
                         list.innerHTML += `
-                            <div onclick="openUserProfile('${u.authUid}', '${u.uid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="flex-shrink-0 flex flex-col items-center cursor-pointer space-y-1 w-16 relative">
+                            <div onclick="openUserProfile('${u.authUid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="flex-shrink-0 flex flex-col items-center cursor-pointer space-y-1 w-16 relative">
                                 <div class="relative">
                                     <img src="${u.photo}" class="w-14 h-14 rounded-full object-cover border-2 border-pink-500">
                                     <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-black rounded-full"></span>
@@ -493,14 +471,14 @@
             db.ref('users').once('value', snap => {
                 snap.forEach(c => {
                     const u = c.val();
-                    if(u.authUid !== currentUser.authUid && (u.username.toLowerCase().includes(query) || u.uid.toLowerCase().includes(query) || u.name.toLowerCase().includes(query))) {
+                    if(u.authUid !== currentUser.uid && (u.username.toLowerCase().includes(query) || u.name.toLowerCase().includes(query))) {
                         container.innerHTML += `
-                            <div onclick="openUserProfile('${u.authUid}', '${u.uid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="p-3 bg-slate-900 border border-pink-500/50 rounded-2xl flex items-center justify-between cursor-pointer shadow-md">
+                            <div onclick="openUserProfile('${u.authUid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="p-3 bg-slate-900 border border-pink-500/50 rounded-2xl flex items-center justify-between cursor-pointer shadow-md">
                                 <div class="flex items-center space-x-3">
                                     <img src="${u.photo}" class="w-11 h-11 rounded-full object-cover border border-pink-500">
                                     <div>
                                         <h4 class="font-semibold text-sm text-white">${u.name}</h4>
-                                        <p class="text-[10px] text-pink-400">@${u.username} • ID: ${u.uid}</p>
+                                        <p class="text-[10px] text-pink-400">@${u.username}</p>
                                     </div>
                                 </div>
                                 <span class="text-xs text-pink-400 font-bold bg-pink-950 px-2.5 py-1 rounded-lg">View</span>
@@ -510,12 +488,11 @@
             });
         }
 
-        function openUserProfile(authUid, numericUid, name, username, gender, photo) {
+        function openUserProfile(authUid, name, username, gender, photo) {
             modalTargetUser = authUid;
             document.getElementById('modalUserName').innerText = name;
             document.getElementById('modalUserUsername').innerText = '@' + username;
             document.getElementById('modalUserGender').innerText = 'Gender: ' + (gender || 'Not specified');
-            document.getElementById('modalUserUid').innerText = 'ID: ' + numericUid;
             document.getElementById('modalUserPhoto').src = photo;
             document.getElementById('userProfileModal').classList.remove('hide');
 
@@ -539,7 +516,7 @@
         }
 
         function checkIfFollowing(targetAuthUid) {
-            db.ref('follows/' + targetAuthUid + '/followers/' + currentUser.authUid).once('value', s => {
+            db.ref('follows/' + targetAuthUid + '/followers/' + currentUser.uid).once('value', s => {
                 const btn = document.getElementById('modalFollowBtn');
                 if(s.exists()) {
                     btn.innerText = "Following";
@@ -552,8 +529,8 @@
         }
 
         function toggleFollowModalUser() {
-            const refFollowers = db.ref('follows/' + modalTargetUser + '/followers/' + currentUser.authUid);
-            const refFollowing = db.ref('follows/' + currentUser.authUid + '/following/' + modalTargetUser);
+            const refFollowers = db.ref('follows/' + modalTargetUser + '/followers/' + currentUser.uid);
+            const refFollowing = db.ref('follows/' + currentUser.uid + '/following/' + modalTargetUser);
 
             refFollowers.once('value', s => {
                 if(s.exists()) {
@@ -590,7 +567,7 @@
                         const u = uSnap.val();
                         if(u) {
                             container.innerHTML += `
-                                <div onclick="document.getElementById('followListModal').classList.add('hide'); openUserProfile('${u.authUid}', '${u.uid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="p-2.5 bg-black rounded-xl border border-slate-800 flex items-center justify-between cursor-pointer">
+                                <div onclick="document.getElementById('followListModal').classList.add('hide'); openUserProfile('${u.authUid}', '${u.name}', '${u.username}', '${u.gender}', '${u.photo}')" class="p-2.5 bg-black rounded-xl border border-slate-800 flex items-center justify-between cursor-pointer">
                                     <div class="flex items-center space-x-2">
                                         <img src="${u.photo}" class="w-8 h-8 rounded-full object-cover border border-pink-500">
                                         <span class="text-xs font-semibold text-white">${u.name}</span>
@@ -627,8 +604,8 @@
         function sendTextMessage() {
             const text = document.getElementById('messageInput').value.trim();
             if(!text || !currentChatUser) return;
-            const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
-            db.ref('chats/' + chatId).push({ sender: currentUser.authUid, text, type: 'text', timestamp: Date.now() });
+            const chatId = [currentUser.uid, currentChatUser].sort().join('_');
+            db.ref('chats/' + chatId).push({ sender: currentUser.uid, text, type: 'text', timestamp: Date.now() });
             document.getElementById('messageInput').value = '';
         }
 
@@ -640,22 +617,22 @@
             
             storageRef.put(file).then(snapshot => {
                 snapshot.ref.getDownloadURL().then(url => {
-                    const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
-                    db.ref('chats/' + chatId).push({ sender: currentUser.authUid, text: url, type: isVideo ? 'video' : 'image', timestamp: Date.now() });
+                    const chatId = [currentUser.uid, currentChatUser].sort().join('_');
+                    db.ref('chats/' + chatId).push({ sender: currentUser.uid, text: url, type: isVideo ? 'video' : 'image', timestamp: Date.now() });
                 });
             });
         }
 
         function loadMessages() {
             if(!currentChatUser) return;
-            const chatId = [currentUser.authUid, currentChatUser].sort().join('_');
+            const chatId = [currentUser.uid, currentChatUser].sort().join('_');
             db.ref('chats/' + chatId).on('value', snap => {
                 const container = document.getElementById('messageContainer');
                 if(!container) return;
                 container.innerHTML = '';
                 snap.forEach(c => {
                     const m = c.val();
-                    const isMe = m.sender === currentUser.authUid;
+                    const isMe = m.sender === currentUser.uid;
                     let content = `<span class="text-xs">${m.text}</span>`;
                     if(m.type === 'image') {
                         content = `<img src="${m.text}" class="w-48 rounded-xl object-cover mb-1"><a href="${m.text}" target="_blank" download class="block text-[10px] text-pink-300 underline text-right">Save to Gallery</a>`;
@@ -676,7 +653,7 @@
                 listEl.innerHTML = '';
                 snap.forEach(c => {
                     const u = c.val();
-                    if(u.authUid !== currentUser.authUid) {
+                    if(u.authUid !== currentUser.uid) {
                         listEl.innerHTML += `
                             <div onclick="openChat('${u.authUid}', '${u.name}', '${u.photo}')" class="p-3 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between cursor-pointer">
                                 <div class="flex items-center space-x-3">
@@ -696,10 +673,10 @@
         function listenToIncomingMessagesGlobally() {
             db.ref('chats').on('child_added', snap => {
                 const chatId = snap.key;
-                if(chatId.includes(currentUser.authUid)) {
+                if(chatId.includes(currentUser.uid)) {
                     db.ref('chats/' + chatId).limitToLast(1).on('child_added', msgSnap => {
                         const m = msgSnap.val();
-                        if(m && m.sender !== currentUser.authUid && (Date.now() - m.timestamp < 5000)) {
+                        if(m && m.sender !== currentUser.uid && (Date.now() - m.timestamp < 5000)) {
                             db.ref('users/' + m.sender).once('value', uSnap => {
                                 const senderUser = uSnap.val();
                                 if(senderUser) {
@@ -741,7 +718,7 @@
 
             const ref = db.ref('rooms').push();
             activeRoomId = ref.key;
-            ref.set({ id: activeRoomId, title, criteria, type, creator: currentUser.authUid, creatorName: userData.name, timestamp: Date.now() }).then(() => {
+            ref.set({ id: activeRoomId, title, criteria, type, creator: currentUser.uid, creatorName: userData.name, timestamp: Date.now() }).then(() => {
                 document.getElementById('createRoomModal').classList.add('hide');
                 openRoomView(title, criteria, type);
             }).catch(err => alert("Room creation error: " + err.message));
@@ -797,7 +774,7 @@
         }
 
         function logoutApp() {
-            auth.signOut().then(() => { localStorage.clear(); location.reload(); });
+            auth.signOut().then(() => { location.reload(); });
         }
     </script>
 </body>
