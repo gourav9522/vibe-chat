@@ -7,8 +7,8 @@ from googleapiclient.discovery import build
 # Apni credentials seedha yahan daal di hain
 CLIENT_ID = "519103871395-bhf39op6fdj8s7e8aq8f3c40qf8c3u4f.apps.googleusercontent.com"
 CLIENT_SECRET = "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"
-REFRESH_TOKEN = "YAHAN_APNA_REFRESH_TOKEN_DAL_DENA"  # Jab token mil jaye yahan paste kar dena
-BLOG_ID = "YAHAN_APNI_BLOGGER_BLOG_ID_DAL_DENA"
+REFRESH_TOKEN = "1//04vlS83AUAz-hCgYIARAAGAQSNwF-L9IrgZNjqC6izJy7pskvmbts-wlZxmbXIxBEo_HR3KKvOoTeQle9LFnCJpaKU-cc2BpeEuQ"
+BLOG_ID = "2982238408328855288"
 
 # Firebase Database URL (Tera Vibe Chat wala Firebase Realtime Database)
 FIREBASE_URL = "https://vibe-chat-ee27e-default-rtdb.firebaseio.com/games.json"
