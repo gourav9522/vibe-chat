@@ -117,6 +117,12 @@ jobs:
         dependencies { implementation 'androidx.appcompat:appcompat:1.6.0' }
         EOF
 
+    - name: Accept SDK Licenses and Install Tools
+      run: |
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.0"
+
     - name: Build APK with Direct Gradle 7.5
       run: |
         cd android-app
