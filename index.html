@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APK Earning App - Google Login</title>
+    <title>APK Earning App - Ludo & Earning</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body { 
-            background: linear-gradient(135deg, rgba(11,15,11,0.9), rgba(20,26,20,0.9)), url('https://archive.org/download/image_e899acdc2_202610/__ia_thumb.jpg'); 
+            background: linear-gradient(135deg, rgba(11,15,11,0.9), rgba(20,26,20,0.9)), url('https://archive.org/download/image_e899acdc2_202610/image_e899acdc~2.jpg'); 
             background-size: cover; 
             background-position: center; 
             background-attachment: fixed;
@@ -31,6 +31,26 @@
         .btn-tab { background: #1a261a; color: #ffd700; border: 1px solid #ffd700; margin: 3px 0; padding: 10px; font-size: 13px; }
         .hidden { display: none; }
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
+
+        /* Withdrawal Section Custom Background & Buttons */
+        #secWithdrawal {
+            background: linear-gradient(135deg, rgba(11,15,11,0.92), rgba(20,26,20,0.92)), url('https://archive.org/download/img-7d-9c-1a-38-8801-44ae-9255-a-8e-14c-7a-115a/IMG_7d9c1a38-8801-44ae-9255-a8e14c7a115a.jpg')[span_7](start_span)[span_7](end_span);
+            background-size: cover;
+            background-position: center;
+        }
+        .withdraw-option-btn {
+            background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center[span_8](start_span)[span_8](end_span);
+            background-size: cover;
+            border: 2px solid #ffd700;
+            color: #fff;
+            padding: 14px;
+            margin-top: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-shadow: 1px 1px 2px #000;
+        }
 
         /* Real Ludo Board Styling */
         .ludo-container { position: relative; width: 300px; height: 300px; margin: 15px auto; background: url('https://archive.org/download/img-271d-1920-e-805-4f-2a-a-40e-48b-152166e-11/IMG_271d1920-e805-4f2a-a40e-48b152166e11.jpg') no-repeat center center; background-size: cover; border: 4px solid #333; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
@@ -74,40 +94,34 @@
 
         <!-- DASHBOARD SECTION -->
         <div id="secDashboard" class="card hidden">
+            <!-- Profile, Telegram & Logout Area -->
             <div id="userProfileArea" style="background: rgba(0,230,118,0.1); padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #00e676; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <small style="color:#aaa; font-size:10px;">Logged in as:</small>
                     <div id="lblUserEmail" style="color: #00e676; font-weight: bold; font-size: 12px;">User</div>
                 </div>
-                <button class="btn-tab" style="padding: 5px 8px; font-size: 10px; background:#d32f2f; color:#fff; width:auto; margin:0;" onclick="logout()">Logout</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-tg" style="padding: 5px 8px; font-size: 10px; width:auto; margin:0;" onclick="window.open('https://t.me/apkearner', '_blank')">Telegram 📢</button>
+                    <button class="btn-tab" style="padding: 5px 8px; font-size: 10px; background:#d32f2f; color:#fff; width:auto; margin:0;" onclick="logout()">Logout</button>
+                </div>
             </div>
 
-            <button class="btn-tg" onclick="window.open('https://t.me/apkearner', '_blank')" style="margin-bottom: 10px; padding: 8px; font-size: 13px; border-radius: 6px;">Join Telegram Support 📢</button>
-
+            <!-- Navigation Tabs (Home, Leaderboard, Refer) -->
             <div style="display:flex; gap:3px;">
                 <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
-                <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
                 <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
                 <button class="btn-tab" onclick="switchTab('tabRefer')">Refer</button>
             </div>
 
-            <!-- Home Tab -->
+            <!-- Home Tab (Contains Ludo, Withdrawal Button & Missions List) -->
             <div id="tabHome" class="tab-content" style="margin-top:12px;">
                 <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
+                <button class="btn-gold" onclick="showWithdrawalSection()" style="margin-top: 8px;">Withdraw Money (UPI)</button>
 
-                <div style="margin-top:15px; background:rgba(15,25,15,0.9); padding:10px; border-radius:8px; border:1px solid #00e676;">
-                    <h4 style="color: #ffd700; margin-top:0; font-size:14px;">UPI Withdrawal (Min. ₹50)</h4>
-                    <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px;">
-                    <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)" style="padding:10px;">
-                    <button class="btn-gold" onclick="requestWithdrawal()">Withdraw to UPI</button>
-                    <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:6px;"></p>
+                <div style="margin-top:15px;">
+                    <h3 style="font-size:16px; color:#ffd700; border-bottom:1px solid #ffd700; padding-bottom:4px;">Available Missions</h3>
+                    <div id="missionsList">Loading missions...</div>
                 </div>
-            </div>
-
-            <!-- Missions Tab -->
-            <div id="tabMissions" class="tab-content hidden" style="margin-top:12px;">
-                <h3 style="font-size:16px;">CPAgrip & App Missions</h3>
-                <div id="missionsList">Loading missions...</div>
             </div>
 
             <!-- Mission Detail View -->
@@ -116,7 +130,7 @@
                 <img id="detImg" class="mission-img" src="" alt="">
                 <p style="color:#ccc; font-size:12px;">Start button dabate hi link Chrome mein khulegi.</p>
                 <button style="background:#00e676; color:#000;" onclick="startMissionLink()">Start Mission (Open in Chrome)</button>
-                <button class="btn-tab" onclick="switchTab('tabMissions')" style="margin-top:8px;">Back to Missions</button>
+                <button class="btn-tab" onclick="switchTab('tabHome')" style="margin-top:8px;">Back to Home</button>
             </div>
 
             <!-- Leaderboard Tab -->
@@ -132,6 +146,26 @@
                 <input type="text" id="txtReferLink" readonly style="padding:10px;">
                 <button class="btn-gold" onclick="shareReferral()">Share Link</button>
             </div>
+        </div>
+
+        <!-- WITHDRAWAL SECTION (Alag section with custom bg & buttons) -->
+        <div id="secWithdrawal" class="card hidden">
+            <h2 style="font-size:18px; color:#ffd700; margin-top:0;">UPI Withdrawal Section</h2>
+            <p style="font-size:13px; color:#ccc;">Apna amount select karein (Charge ke sath wallet se amount deduct hoga):</p>
+            
+            <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px; margin-bottom:10px;">
+
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(50, 54)">Withdraw ₹50 (Deducts ₹54)[span_9](start_span)[span_9](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(100, 111)">Withdraw ₹100 (Deducts ₹111)[span_10](start_span)[span_10](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(150, 165)">Withdraw ₹150 (Deducts ₹165)[span_11](start_span)[span_11](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(200, 205)">Withdraw ₹200 (Deducts ₹205)[span_12](start_span)[span_12](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(300, 315)">Withdraw ₹300 (Deducts ₹315)[span_13](start_span)[span_13](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(500, 514)">Withdraw ₹500 (Deducts ₹514)[span_14](start_span)[span_14](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(700, 720)">Withdraw ₹700 (Deducts ₹720)[span_15](start_span)[span_15](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)">Withdraw ₹1000 (0 Charge - Deducts ₹1000)[span_16](start_span)[span_16](end_span)</div>
+
+            <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:8px; text-align:center;"></p>
+            <button class="btn-tab" onclick="showGameSec('secDashboard'); switchTab('tabHome');" style="margin-top:12px;">Back to Home</button>
         </div>
 
         <!-- LUDO LOBBY & GAME SECTION -->
@@ -154,15 +188,12 @@
         <div id="secLudoPlay" class="card hidden" style="text-align:center;">
             <h2 style="font-size:16px; margin:5px 0;">Ludo King 1v1 Arena</h2>
             
-            <!-- Real Ludo Board with Image & Tokens -->
             <div class="ludo-container" id="ludoBoardDiv">
-                <!-- User 4 Tokens -->
                 <div class="token token-user" id="u1" style="top: 25px; left: 25px;" onclick="moveToken(0)">1</div>
                 <div class="token token-user" id="u2" style="top: 25px; left: 55px;" onclick="moveToken(1)">2</div>
                 <div class="token token-user" id="u3" style="top: 55px; left: 25px;" onclick="moveToken(2)">3</div>
                 <div class="token token-user" id="u4" style="top: 55px; left: 55px;" onclick="moveToken(3)">4</div>
                 
-                <!-- Bot 4 Tokens -->
                 <div class="token token-bot" id="b1" style="top: 225px; right: 55px;">1</div>
                 <div class="token token-bot" id="b2" style="top: 225px; right: 25px;">2</div>
                 <div class="token token-bot" id="b3" style="top: 255px; right: 55px;">3</div>
@@ -188,14 +219,14 @@
             <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()" style="padding:8px;">
             <div id="adminUserList" style="max-height:130px; overflow-y:auto; background:#111; padding:6px; border-radius:6px; margin-top:4px;"></div>
 
-            <h4 style="margin-top:12px; font-size:14px;">Add CPAgrip Mission</h4>
+            <h4 style="margin-top:12px; font-size:14px;">Add Ad / CPAgrip Mission</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
             <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
             <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
             <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
 
-            <h4 style="margin-top:15px; font-size:14px;">Withdrawal Requests (Min ₹50)</h4>
+            <h4 style="margin-top:15px; font-size:14px;">Withdrawal Requests</h4>
             <div id="adminWithdrawalsList" style="font-size:13px;">Loading requests...</div>
         </div>
 
@@ -308,6 +339,7 @@
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secWithdrawal').classList.add('hidden');
             
             if(id === 'secDashboard') {
                 switchTab('tabHome');
@@ -316,8 +348,22 @@
             }
         }
 
+        function showWithdrawalSection() {
+            document.getElementById('tabHome').classList.add('hidden');
+            document.getElementById('secLudoLobby').classList.add('hidden');
+            document.getElementById('secLudoPlay').classList.add('hidden');
+            document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secMissionDetail').classList.add('hidden');
+            document.getElementById('secWithdrawal').classList.remove('hidden');
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('secWithdrawal').classList.add('hidden');
+            document.getElementById('secLudoLobby').classList.add('hidden');
+            document.getElementById('secLudoPlay').classList.add('hidden');
+            document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secMissionDetail').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
         }
 
@@ -326,6 +372,39 @@
             if(currentUser) {
                 db.ref('users/' + currentUser.uid + '/wallet').set(userData.wallet);
             }
+        }
+
+        // --- CUSTOM WITHDRAWAL WITH DEDUCTION CHARGES ---
+        function requestCustomWithdrawal(payoutAmt, deductAmt) {
+            let upi = document.getElementById('txtUpi').value.trim();
+            if (!upi) { alert("Kripya pehle apni UPI ID daalein!"); return; }
+            if (userData.wallet < deductAmt) { 
+                alert(`Balance kam hai! ₹${payoutAmt} withdrawal ke liye charge ke sath total ₹${deductAmt} chahiye.`); 
+                return; 
+            }
+
+            updateWallet(-deductAmt);
+            db.ref('withdrawals').push({ 
+                uid: currentUser.uid, 
+                email: userData.email, 
+                upi: upi, 
+                amount: payoutAmt, 
+                deducted: deductAmt, 
+                time: Date.now() 
+            });
+            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke UPI par bhej diye jayenge (Deducted from wallet: ₹${deductAmt}).`);
+            showGameSec('secDashboard');
+            switchTab('tabHome');
+        }
+
+        function checkWithdrawalTimer() {
+            let lock = localStorage.getItem('lock_' + currentUser.uid);
+            let lbl = document.getElementById('lblWithdrawStatus');
+            if (lock && Date.now() < lock) {
+                let rem = lock - Date.now();
+                let hrs = Math.floor(rem / 3600000);
+                lbl.innerText = `Wait 24 hours: ${hrs} hours remaining`;
+            } else { if(lbl) lbl.innerText = ""; }
         }
 
         // --- REAL LUDO KING ENGINE ---
@@ -449,21 +528,22 @@
             }
         }
 
-        // --- MISSIONS ---
+        // --- MISSIONS ON HOME PAGE ---
         function loadMissions() {
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('missionsList');
+                if(!list) return;
                 list.innerHTML = "";
-                if (!snapshot.exists()) { list.innerHTML = "<p>No missions available.</p>"; return; }
+                if (!snapshot.exists()) { list.innerHTML = "<p style='color:#ccc; font-size:13px;'>No missions available right now.</p>"; return; }
                 snapshot.forEach(child => {
                     let m = child.val();
                     let mId = child.key;
                     list.innerHTML += `
                         <div class="mission-card">
                             <img src="${m.image}" class="mission-img">
-                            <h4>${m.title}</h4>
-                            <p style="color:#00e676;">Win Prize: ₹${m.prize}</p>
-                            <button onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">View Details</button>
+                            <h4 style="margin:5px 0; color:#ffd700;">${m.title}</h4>
+                            <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize}</p>
+                            <button style="padding:8px; font-size:13px;" onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">View Details</button>
                         </div>
                     `;
                 });
@@ -476,7 +556,8 @@
             activeMissionLink = link;
             window.currentMissionId = mId;
             window.currentMissionPrize = prize;
-            switchTab('secMissionDetail');
+            document.getElementById('tabHome').classList.add('hidden');
+            document.getElementById('secMissionDetail').classList.remove('hidden');
         }
 
         function startMissionLink() {
@@ -485,7 +566,8 @@
                 if(confirm("Mission complete ho gaya? OK dabayein reward claim karne ke liye.")) {
                     updateWallet(window.currentMissionPrize);
                     alert("Reward Added: ₹" + window.currentMissionPrize);
-                    switchTab('tabMissions');
+                    showGameSec('secDashboard');
+                    switchTab('tabHome');
                 }
             }, 3000);
         }
@@ -494,6 +576,7 @@
         function loadLeaderboard() {
             db.ref('users').orderByChild('wallet').limitToLast(10).on('value', snapshot => {
                 let div = document.getElementById('leaderboardList');
+                if(!div) return;
                 div.innerHTML = "";
                 let list = [];
                 snapshot.forEach(c => list.push(c.val()));
@@ -501,31 +584,6 @@
                     div.innerHTML += `<p>${i + 1}. ${u.email || 'User'} - <span style="color:#00e676;">₹${(u.wallet||0).toFixed(2)}</span></p>`;
                 });
             });
-        }
-
-        // --- WITHDRAWAL ---
-        function requestWithdrawal() {
-            let upi = document.getElementById('txtUpi').value.trim();
-            let amt = parseFloat(document.getElementById('txtAmt').value);
-            if (!upi || isNaN(amt)) { alert("Enter valid UPI ID and Amount."); return; }
-            if (amt < 50) { alert("Minimum withdrawal amount is ₹50!"); return; }
-            if (amt > userData.wallet) { alert("Insufficient Balance!"); return; }
-
-            updateWallet(-amt);
-            db.ref('withdrawals').push({ uid: currentUser.uid, email: userData.email, upi: upi, amount: amt, time: Date.now() });
-            localStorage.setItem('lock_' + currentUser.uid, Date.now() + 86400000);
-            checkWithdrawalTimer();
-            alert("Withdrawal Requested Successfully!");
-        }
-
-        function checkWithdrawalTimer() {
-            let lock = localStorage.getItem('lock_' + currentUser.uid);
-            let lbl = document.getElementById('lblWithdrawStatus');
-            if (lock && Date.now() < lock) {
-                let rem = lock - Date.now();
-                let hrs = Math.floor(rem / 3600000);
-                lbl.innerText = `Wait 24 hours: ${hrs} hours remaining`;
-            } else { lbl.innerText = ""; }
         }
 
         // --- ADMIN PANEL ---
@@ -536,6 +594,7 @@
             });
             db.ref('withdrawals').on('value', snapshot => {
                 let list = document.getElementById('adminWithdrawalsList');
+                if(!list) return;
                 list.innerHTML = "";
                 if (!snapshot.exists()) { list.innerHTML = "<p>No withdrawal requests.</p>"; return; }
                 snapshot.forEach(child => {
@@ -543,7 +602,7 @@
                     let id = child.key;
                     list.innerHTML += `
                         <div style="background:#222; padding:6px; margin-top:4px; border-radius:4px;">
-                            <p>${w.email} | UPI: ${w.upi} | ₹${w.amount}</p>
+                            <p>${w.email} | UPI: ${w.upi} | Payout: ₹${w.amount} (Deducted: ₹${w.deducted || w.amount})</p>
                             <button style="background:#00e676; padding:4px; color:#000;" onclick="approveWithdrawal('${id}')">Approve & Pay</button>
                         </div>
                     `;
@@ -553,6 +612,7 @@
 
         function renderUserList(users) {
             let div = document.getElementById('adminUserList');
+            if(!div) return;
             div.innerHTML = "";
             for (let uid in users) {
                 let u = users[uid];
@@ -600,6 +660,10 @@
             if (title && image && link && !isNaN(prize)) {
                 db.ref('missions').push({ title, image, link, prize });
                 alert("Mission added successfully!");
+                document.getElementById('admMisTitle').value = "";
+                document.getElementById('admMisImg').value = "";
+                document.getElementById('admMisLink').value = "";
+                document.getElementById('admMisPrize').value = "";
             } else { alert("Sabhi fields bharein!"); }
         }
 
