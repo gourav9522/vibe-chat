@@ -118,7 +118,7 @@
             <div id="tabHome" class="tab-content" style="margin-top:12px;">
                 <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
                 <button class="btn-gold" onclick="showWithdrawalSection()" style="margin-top: 8px;">Withdraw Money (UPI)</button>
-                <button class="btn-ad" onclick="watchAdminAd()" style="margin-top: 8px;">Watch Ad & Earn 🎁</button>
+                <button class="btn-ad" id="watchAdBtn" onclick="watchAdminAd()" style="margin-top: 8px;">Watch Ad & Earn 🎁</button>
 
                 <div style="margin-top:15px;">
                     <h3 style="font-size:16px; color:#ffd700; border-bottom:1px solid #ffd700; padding-bottom:4px;">Available Missions</h3>
@@ -325,10 +325,30 @@
                 document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
                 checkWithdrawalTimer();
 
+                // Check daily ad status on login
+                const today = new Date().toISOString().split('T')[0];
+                let adBtn = document.getElementById('watchAdBtn');
+                if (adBtn) {
+                    if (userData.lastAdDate === today) {
+                        adBtn.innerText = "Claimed";
+                        adBtn.disabled = true;
+                    } else {
+                        adBtn.innerText = "Watch Ad & Earn 🎁";
+                        adBtn.disabled = false;
+                    }
+                }
+
                 db.ref('users/' + user.uid).on('value', snap => {
                     if (snap.exists()) {
                         userData = snap.val();
                         document.getElementById('lblHeaderWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                        
+                        let currentToday = new Date().toISOString().split('T')[0];
+                        let btn = document.getElementById('watchAdBtn');
+                        if (btn && userData.lastAdDate === currentToday) {
+                            btn.innerText = "Claimed";
+                            btn.disabled = true;
+                        }
                     }
                 });
             });
@@ -403,19 +423,42 @@
         }
 
         function watchAdminAd() {
-            db.ref('settings/adLink').once('value', snapshot => {
-                let link = snapshot.val();
-                if (!link) {
-                    alert("Admin ne abhi ad link set nahi kiya hai!");
+            if (!currentUser) return;
+            const today = new Date().toISOString().split('T')[0];
+            const userRef = db.ref('users/' + currentUser.uid);
+
+            userRef.once('value').then(snapshot => {
+                let uData = snapshot.val() || {};
+                if (uData.lastAdDate === today) {
+                    alert("Aap aaj ka ad dekh chuke hain! Kal dobara milega.");
+                    let btn = document.getElementById('watchAdBtn');
+                    if (btn) {
+                        btn.innerText = "Claimed";
+                        btn.disabled = true;
+                    }
                     return;
                 }
-                window.open(link, '_blank');
-                setTimeout(() => {
-                    if(confirm("Ad dekh liya? OK dabayein reward claim karne ke liye.")) {
-                        updateWallet(1.00);
-                        alert("Reward Added: ₹1.00");
+
+                db.ref('settings/adLink').once('value', snapshot => {
+                    let link = snapshot.val();
+                    if (!link) {
+                        alert("Admin ne abhi ad link set nahi kiya hai!");
+                        return;
                     }
-                }, 3000);
+                    window.open(link, '_blank');
+                    setTimeout(() => {
+                        if(confirm("Ad dekh liya? OK dabayein reward claim karne ke liye.")) {
+                            updateWallet(1.00);
+                            userRef.update({ lastAdDate: today });
+                            let btn = document.getElementById('watchAdBtn');
+                            if (btn) {
+                                btn.innerText = "Claimed";
+                                btn.disabled = true;
+                            }
+                            alert("Reward Added: ₹1.00");
+                        }
+                    }, 3000);
+                });
             });
         }
 
@@ -608,7 +651,6 @@
             document.getElementById('detTitle').innerText = title;
             document.getElementById('detImg').src = img;
             
-            // Append subid parameter with user UID for CPAgrip postback tracking
             let finalLink = link;
             if (currentUser) {
                 let sep = finalLink.includes('?') ? '&' : '?';
@@ -664,7 +706,6 @@
                 });
             });
 
-            // Load Admin Missions List for Deletion
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('adminMissionsList');
                 if(!list) return;
@@ -688,9 +729,7 @@
 
         function adminDeleteMission(mId) {
             if (confirm("Kya aap waqai is mission ko delete karna chahte hain? Yeh sabhi users ke data se bhi remove ho jayega.")) {
-                // Remove mission from missions node
                 db.ref('missions/' + mId).remove().then(() => {
-                    // Clean up completedMissions from all users data
                     db.ref('users').once('value', snapshot => {
                         snapshot.forEach(userSnap => {
                             db.ref('users/' + userSnap.key + '/completedMissions/' + mId).remove();
