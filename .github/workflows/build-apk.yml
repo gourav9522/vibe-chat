@@ -23,6 +23,7 @@ jobs:
         mkdir -p android-app/app/src/main/assets
         mkdir -p android-app/app/src/main/java/com/apk/earning
         mkdir -p android-app/app/src/main/res/mipmap
+        mkdir -p android-app/gradle/wrapper
 
         cp index.html android-app/app/src/main/assets/
 
@@ -128,11 +129,9 @@ jobs:
     - name: Build APK with Gradle
       run: |
         cd android-app
-        mkdir -p gradle/wrapper
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
         EOT
-        gradle wrapper --gradle-version 6.7.1 || true
         chmod +x gradlew || true
         ./gradlew assembleDebug
 
