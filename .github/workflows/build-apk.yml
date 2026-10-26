@@ -18,6 +18,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
     - name: Create Basic Android Project Structure
       run: |
         mkdir -p android-app/app/src/main/assets
@@ -117,13 +120,11 @@ jobs:
         dependencies { implementation 'androidx.appcompat:appcompat:1.6.0' }
         EOF
 
-    - name: Build APK with Command Line Tools
+        echo "sdk.dir=$ANDROID_HOME" > android-app/local.properties
+
+    - name: Build APK with Gradle
       run: |
         cd android-app
-        yes | sdkmanager --licenses || true
-        sdkmanager "platforms;android-33" "build-tools;33.0.0"
-        export ANDROID_HOME=$ANDROID_SDK_ROOT
-        echo "sdk.dir=$ANDROID_HOME" > local.properties
         chmod +x gradlew || true
         gradle wrapper
         ./gradlew assembleDebug
