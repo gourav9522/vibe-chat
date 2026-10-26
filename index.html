@@ -27,19 +27,19 @@
         .btn-gold { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; }
         .btn-google { background: #fff; color: #757575; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; }
         .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
-        .btn-tg { background: linear-gradient(45deg, #0088cc, #00aced); color: #fff; }
+        .btn-ad { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
         .btn-tab { background: #1a261a; color: #ffd700; border: 1px solid #ffd700; margin: 3px 0; padding: 10px; font-size: 13px; }
         .hidden { display: none; }
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
         /* Withdrawal Section Custom Background & Buttons */
         #secWithdrawal {
-            background: linear-gradient(135deg, rgba(11,15,11,0.92), rgba(20,26,20,0.92)), url('https://archive.org/download/img-7d-9c-1a-38-8801-44ae-9255-a-8e-14c-7a-115a/IMG_7d9c1a38-8801-44ae-9255-a8e14c7a115a.jpg')[span_7](start_span)[span_7](end_span);
+            background: linear-gradient(135deg, rgba(11,15,11,0.92), rgba(20,26,20,0.92)), url('https://archive.org/download/img-7d-9c-1a-38-8801-44ae-9255-a-8e-14c-7a-115a/IMG_7d9c1a38-8801-44ae-9255-a8e14c7a115a.jpg');
             background-size: cover;
             background-position: center;
         }
         .withdraw-option-btn {
-            background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center[span_8](start_span)[span_8](end_span);
+            background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center;
             background-size: cover;
             border: 2px solid #ffd700;
             color: #fff;
@@ -50,6 +50,10 @@
             cursor: pointer;
             text-align: center;
             text-shadow: 1px 1px 2px #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         /* Real Ludo Board Styling */
@@ -94,29 +98,33 @@
 
         <!-- DASHBOARD SECTION -->
         <div id="secDashboard" class="card hidden">
-            <!-- Profile, Telegram & Logout Area -->
-            <div id="userProfileArea" style="background: rgba(0,230,118,0.1); padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #00e676; display: flex; justify-content: space-between; align-items: center;">
+            <!-- Profile Area with Clickable Profile for Support/Logout Options -->
+            <div id="userProfileArea" style="background: rgba(0,230,118,0.1); padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #00e676; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleProfileMenu()">
                 <div>
-                    <small style="color:#aaa; font-size:10px;">Logged in as:</small>
+                    <small style="color:#aaa; font-size:10px;">Logged in as (Click for Options):</small>
                     <div id="lblUserEmail" style="color: #00e676; font-weight: bold; font-size: 12px;">User</div>
                 </div>
-                <div style="display:flex; gap:6px;">
-                    <button class="btn-tg" style="padding: 5px 8px; font-size: 10px; width:auto; margin:0;" onclick="window.open('https://t.me/apkearner', '_blank')">Telegram 📢</button>
-                    <button class="btn-tab" style="padding: 5px 8px; font-size: 10px; background:#d32f2f; color:#fff; width:auto; margin:0;" onclick="logout()">Logout</button>
-                </div>
+                <span style="font-size: 16px;">👤▼</span>
             </div>
 
-            <!-- Navigation Tabs (Home, Leaderboard, Refer) -->
+            <!-- Hidden Profile Menu (Support & Logout) -->
+            <div id="profileMenu" class="hidden" style="background: #112211; border: 1px solid #ffd700; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                <button class="btn-tg" style="margin-top:0; padding:8px; font-size:12px;" onclick="window.open('https://t.me/apkearner', '_blank')">Support / Telegram 📢</button>
+                <button class="btn-tab" style="background:#d32f2f; color:#fff; border:none; margin-top:6px; padding:8px; font-size:12px;" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Navigation Tabs -->
             <div style="display:flex; gap:3px;">
                 <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
                 <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
                 <button class="btn-tab" onclick="switchTab('tabRefer')">Refer</button>
             </div>
 
-            <!-- Home Tab (Contains Ludo, Withdrawal Button & Missions List) -->
+            <!-- Home Tab -->
             <div id="tabHome" class="tab-content" style="margin-top:12px;">
                 <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
                 <button class="btn-gold" onclick="showWithdrawalSection()" style="margin-top: 8px;">Withdraw Money (UPI)</button>
+                <button class="btn-ad" onclick="watchAdminAd()" style="margin-top: 8px;">Watch Ad & Earn 🎁</button>
 
                 <div style="margin-top:15px;">
                     <h3 style="font-size:16px; color:#ffd700; border-bottom:1px solid #ffd700; padding-bottom:4px;">Available Missions</h3>
@@ -148,21 +156,21 @@
             </div>
         </div>
 
-        <!-- WITHDRAWAL SECTION (Alag section with custom bg & buttons) -->
+        <!-- WITHDRAWAL SECTION -->
         <div id="secWithdrawal" class="card hidden">
             <h2 style="font-size:18px; color:#ffd700; margin-top:0;">UPI Withdrawal Section</h2>
             <p style="font-size:13px; color:#ccc;">Apna amount select karein (Charge ke sath wallet se amount deduct hoga):</p>
             
             <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px; margin-bottom:10px;">
 
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(50, 54)">Withdraw ₹50 (Deducts ₹54)[span_9](start_span)[span_9](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(100, 111)">Withdraw ₹100 (Deducts ₹111)[span_10](start_span)[span_10](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(150, 165)">Withdraw ₹150 (Deducts ₹165)[span_11](start_span)[span_11](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(200, 205)">Withdraw ₹200 (Deducts ₹205)[span_12](start_span)[span_12](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(300, 315)">Withdraw ₹300 (Deducts ₹315)[span_13](start_span)[span_13](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(500, 514)">Withdraw ₹500 (Deducts ₹514)[span_14](start_span)[span_14](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(700, 720)">Withdraw ₹700 (Deducts ₹720)[span_15](start_span)[span_15](end_span)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)">Withdraw ₹1000 (0 Charge - Deducts ₹1000)[span_16](start_span)[span_16](end_span)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(50, 54)"><span>🪙</span> Amount: ₹50 | Fee: ₹4 (Total Deduct: ₹54)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(100, 111)"><span>🪙</span> Amount: ₹100 | Fee: ₹11 (Total Deduct: ₹111)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(150, 165)"><span>🪙</span> Amount: ₹150 | Fee: ₹15 (Total Deduct: ₹165)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(200, 205)"><span>🪙</span> Amount: ₹200 | Fee: ₹5 (Total Deduct: ₹205)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(300, 315)"><span>🪙</span> Amount: ₹300 | Fee: ₹15 (Total Deduct: ₹315)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(500, 514)"><span>🪙</span> Amount: ₹500 | Fee: ₹14 (Total Deduct: ₹514)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(700, 720)"><span>🪙</span> Amount: ₹700 | Fee: ₹20 (Total Deduct: ₹720)</div>
+            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)"><span>🪙</span> Amount: ₹1000 | Fee: ₹0 (Total Deduct: ₹1000)</div>
 
             <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:8px; text-align:center;"></p>
             <button class="btn-tab" onclick="showGameSec('secDashboard'); switchTab('tabHome');" style="margin-top:12px;">Back to Home</button>
@@ -215,11 +223,15 @@
             <h2 style="color: #ff5722; font-size:18px;">Admin Control Panel</h2>
             <button class="btn-tab" onclick="showGameSec('secDashboard')">Exit Admin</button>
             
-            <h4 style="margin-top:12px; font-size:14px;">Search User</h4>
+            <h4 style="margin-top:12px; font-size:14px;">Manage Users & Coins</h4>
             <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()" style="padding:8px;">
             <div id="adminUserList" style="max-height:130px; overflow-y:auto; background:#111; padding:6px; border-radius:6px; margin-top:4px;"></div>
 
-            <h4 style="margin-top:12px; font-size:14px;">Add Ad / CPAgrip Mission</h4>
+            <h4 style="margin-top:12px; font-size:14px;">Set Watch Ad Link</h4>
+            <input type="text" id="admAdLink" placeholder="Enter Ad URL/Link" style="padding:8px;">
+            <button class="btn-gold" onclick="saveAdLink()">Save Ad Link</button>
+
+            <h4 style="margin-top:12px; font-size:14px;">Add Mission</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
             <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
@@ -325,6 +337,11 @@
             document.getElementById('secLogin').classList.remove('hidden');
         }
 
+        function toggleProfileMenu() {
+            let menu = document.getElementById('profileMenu');
+            menu.classList.toggle('hidden');
+        }
+
         function logout() {
             auth.signOut().then(() => {
                 currentUser = null;
@@ -374,7 +391,23 @@
             }
         }
 
-        // --- CUSTOM WITHDRAWAL WITH DEDUCTION CHARGES ---
+        function watchAdminAd() {
+            db.ref('settings/adLink').once('value', snapshot => {
+                let link = snapshot.val();
+                if (!link) {
+                    alert("Admin ne abhi ad link set nahi kiya hai!");
+                    return;
+                }
+                window.open(link, '_blank');
+                setTimeout(() => {
+                    if(confirm("Ad dekh liya? OK dabayein reward claim karne ke liye.")) {
+                        updateWallet(1.00);
+                        alert("Reward Added: ₹1.00");
+                    }
+                }, 3000);
+            });
+        }
+
         function requestCustomWithdrawal(payoutAmt, deductAmt) {
             let upi = document.getElementById('txtUpi').value.trim();
             if (!upi) { alert("Kripya pehle apni UPI ID daalein!"); return; }
@@ -392,7 +425,7 @@
                 deducted: deductAmt, 
                 time: Date.now() 
             });
-            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke UPI par bhej diye jayenge (Deducted from wallet: ₹${deductAmt}).`);
+            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke UPI par bhej diye jayenge.`);
             showGameSec('secDashboard');
             switchTab('tabHome');
         }
@@ -620,7 +653,7 @@
                     <div style="border-bottom:1px solid #444; padding:4px; display:flex; justify-content:space-between; align-items:center;">
                         <span>${u.email} (₹${u.wallet || 0})</span>
                         <div>
-                            <button style="padding:3px; font-size:11px; width:auto;" onclick="adminEditCoin('${uid}')">Coin</button>
+                            <button style="padding:3px; font-size:11px; width:auto;" onclick="adminEditCoin('${uid}')">Edit Coin</button>
                             <button style="padding:3px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
                         </div>
                     </div>
@@ -640,16 +673,26 @@
         }
 
         function adminEditCoin(uid) {
-            let newBal = prompt("Enter new wallet balance:");
+            let newBal = prompt("Enter new wallet balance/coins:");
             if (newBal !== null && !isNaN(newBal)) {
                 db.ref('users/' + uid + '/wallet').set(parseFloat(newBal));
-                alert("Balance updated!");
+                alert("Coins updated successfully!");
             }
         }
 
         function adminToggleBan(uid, currentStatus) {
             db.ref('users/' + uid + '/banned').set(!currentStatus);
             alert("User status updated!");
+        }
+
+        function saveAdLink() {
+            let link = document.getElementById('admAdLink').value.trim();
+            if (link) {
+                db.ref('settings/adLink').set(link);
+                alert("Watch Ad Link saved successfully!");
+            } else {
+                alert("Kripya valid link daalein!");
+            }
         }
 
         function adminAddMission() {
