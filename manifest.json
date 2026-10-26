@@ -1,0 +1,11 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Apk earner",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Apk earner",
+  "start_url": "https://gourav9522.github.io/vibe-chat/",
+  "theme_color": "#ffffff"
+}
