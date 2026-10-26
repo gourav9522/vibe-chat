@@ -28,8 +28,7 @@ jobs:
         cp index.html android-app/app/src/main/assets/
 
         cat << 'EOF' > android-app/app/src/main/AndroidManifest.xml
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            package="com.apk.earning">
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <application
@@ -93,7 +92,7 @@ jobs:
         cat << 'EOF' > android-app/build.gradle
         buildscript {
             repositories { google(); mavenCentral() }
-            dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
+            dependencies { classpath 'com.android.tools.build:gradle:8.1.0' }
         }
         allprojects { repositories { google(); mavenCentral() } }
         EOF
@@ -106,22 +105,23 @@ jobs:
         cat << 'EOF' > android-app/app/build.gradle
         apply plugin: 'com.android.application'
         android {
-            compileSdk 33
+            namespace 'com.apk.earning'
+            compileSdk 34
             defaultConfig {
                 applicationId "com.apk.earning"
                 minSdk 21
-                targetSdk 33
+                targetSdk 34
                 versionCode 1
                 versionName "1.0"
             }
         }
-        dependencies { implementation 'androidx.appcompat:appcompat:1.6.0' }
+        dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' }
         EOF
 
         cat << 'EOF' > android-app/gradle/wrapper/gradle-wrapper.properties
         distributionBase=GRADLE_USER_HOME
         distributionPath=wrapper/dists
-        distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-bin.zip
+        distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
         zipStoreBase=GRADLE_USER_HOME
         zipStorePath=wrapper/dists
         EOF
@@ -132,7 +132,7 @@ jobs:
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
         EOT
-        gradle wrapper --gradle-version 7.5
+        gradle wrapper --gradle-version 8.4
         chmod +x gradlew
         ./gradlew assembleDebug
 
