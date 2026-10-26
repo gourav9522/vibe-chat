@@ -132,7 +132,8 @@ jobs:
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
         EOT
-        chmod +x gradlew || true
+        gradle wrapper --gradle-version 7.5
+        chmod +x gradlew
         ./gradlew assembleDebug
 
     - name: Upload Generated APK
