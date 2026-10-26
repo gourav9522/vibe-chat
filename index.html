@@ -32,9 +32,7 @@
         .hidden { display: none; }
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
-        #secWithdrawal {
-            background: rgba(15, 25, 15, 0.95);
-        }
+        #secWithdrawal { background: rgba(15, 25, 15, 0.95); }
         .withdraw-option-btn {
             background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center;
             background-size: cover;
@@ -103,9 +101,9 @@
                 <span style="font-size: 16px;">👤▼</span>
             </div>
 
-            <!-- Profile Menu (Support & Logout) -->
+            <!-- Profile Menu -->
             <div id="profileMenu" class="hidden" style="background: #112211; border: 1px solid #ffd700; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
-                <button class="btn-tg" style="margin-top:0; padding:8px; font-size:12px;" onclick="window.open('https://t.me/apkearner', '_blank')">Support / Telegram 📢</button>
+                <button class="btn-tab" style="margin-top:0; padding:8px; font-size:12px;" onclick="window.open('https://t.me/apkearner', '_blank')">Support / Telegram 📢</button>
                 <button class="btn-tab" style="background:#d32f2f; color:#fff; border:none; margin-top:6px; padding:8px; font-size:12px;" onclick="logout()">Logout</button>
             </div>
 
@@ -132,7 +130,7 @@
             <div id="secMissionDetail" class="card hidden" style="margin-top:12px;">
                 <h3 id="detTitle" style="font-size:16px;">Mission Title</h3>
                 <img id="detImg" class="mission-img" src="" alt="">
-                <p style="color:#ccc; font-size:12px;">Start button dabate hi link Chrome mein khulegi.</p>
+                <p style="color:#ccc; font-size:12px;">Start button dabate hi offer link Chrome mein khulegi. Task complete hone par CPAgrip postback ke zariye reward automatic aapke wallet mein add ho jayega!</p>
                 <button style="background:#00e676; color:#000;" onclick="startMissionLink()">Start Mission (Open in Chrome)</button>
                 <button class="btn-tab" onclick="switchTab('tabHome')" style="margin-top:8px;">Back to Home</button>
             </div>
@@ -155,7 +153,7 @@
         <!-- WITHDRAWAL SECTION -->
         <div id="secWithdrawal" class="card hidden">
             <h2 style="font-size:18px; color:#ffd700; margin-top:0;">UPI Withdrawal Section</h2>
-            <p style="font-size:13px; color:#ccc;">Apna amount select karein (Charge ke sath wallet se amount deduct hoga):</p>
+            <p style="font-size:13px; color:#ccc;">Apna amount select karein:</p>
             
             <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px; margin-bottom:10px;">
 
@@ -219,7 +217,6 @@
             <h2 style="color: #ff5722; font-size:18px;">Admin Control Panel</h2>
             <button class="btn-tab" onclick="showGameSec('secDashboard')">Exit Admin</button>
             
-            <!-- Show/Hide Button & Section for All Logged Users -->
             <button class="btn-gold" style="margin-top:12px;" onclick="toggleUserListSection()">👥 Show/Hide All Logged Users</button>
             <div id="adminUserSection" class="hidden" style="background:#111; padding:10px; border-radius:8px; margin-top:8px; border:1px solid #ffd700;">
                 <h4 style="margin:0 0 8px 0; font-size:13px; color:#ffd700;">All Logged Users & Coin Management</h4>
@@ -231,12 +228,14 @@
             <input type="text" id="admAdLink" placeholder="Enter Ad URL/Link" style="padding:8px;">
             <button class="btn-gold" onclick="saveAdLink()">Save Ad Link</button>
 
-            <h4 style="margin-top:15px; font-size:14px;">Add Mission</h4>
+            <h4 style="margin-top:15px; font-size:14px;">Add / Manage Missions</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
             <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
             <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
             <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
+
+            <div id="adminMissionsList" style="margin-top:12px;"></div>
 
             <h4 style="margin-top:15px; font-size:14px;">Withdrawal Requests</h4>
             <div id="adminWithdrawalsList" style="font-size:13px;">Loading requests...</div>
@@ -257,7 +256,7 @@
         const db = firebase.database();
 
         let currentUser = null;
-        let userData = { wallet: 0, banned: false };
+        let userData = { wallet: 0, banned: false, completedMissions: {} };
         let allUsersData = {};
         let activeMissionLink = "";
         let titleClickCount = 0;
@@ -313,13 +312,12 @@
                         logout();
                         return;
                     }
-                    // Update name/email if missing
                     db.ref('users/' + user.uid).update({
                         email: user.email,
                         name: user.displayName || userData.name || user.email.split('@')[0]
                     });
                 } else {
-                    userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0] };
+                    userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0], completedMissions: {} };
                     db.ref('users/' + user.uid).set(userData);
                 }
                 
@@ -358,7 +356,7 @@
         function logout() {
             auth.signOut().then(() => {
                 currentUser = null;
-                userData = { wallet: 0, banned: false };
+                userData = { wallet: 0, banned: false, completedMissions: {} };
                 showLoginScreen();
             });
         }
@@ -453,7 +451,7 @@
             } else { if(lbl) lbl.innerText = ""; }
         }
 
-        // --- REAL LUDO KING ENGINE ---
+        // --- ACCURATELY ADJUSTED LUDO PATH COORDINATES (300x300 Board) ---
         let currentEntry = 2;
         let userTokenPos = [-1, -1, -1, -1];
         let botTokenPos = [-1, -1, -1, -1];
@@ -461,14 +459,14 @@
         let isUserTurn = true;
 
         const pathCoords = [
-            {top: 130, left: 15}, {top: 130, left: 35}, {top: 130, left: 55}, {top: 130, left: 75}, {top: 130, left: 95},
-            {top: 95, left: 130}, {top: 75, left: 130}, {top: 55, left: 130}, {top: 35, left: 130}, {top: 15, left: 130}, {top: 15, left: 150},
-            {top: 15, left: 170}, {top: 35, left: 170}, {top: 55, left: 170}, {top: 75, left: 170}, {top: 95, left: 170},
-            {top: 130, left: 205}, {top: 130, left: 225}, {top: 130, left: 245}, {top: 130, left: 265}, {top: 130, left: 285}, {top: 150, left: 285},
-            {top: 170, left: 285}, {top: 170, left: 265}, {top: 170, left: 245}, {top: 170, left: 225}, {top: 170, left: 205},
-            {top: 205, left: 170}, {top: 225, left: 170}, {top: 245, left: 170}, {top: 265, left: 170}, {top: 285, left: 170}, {top: 285, left: 150},
-            {top: 285, left: 130}, {top: 265, left: 130}, {top: 245, left: 130}, {top: 225, left: 130}, {top: 205, left: 130},
-            {top: 170, left: 95}, {top: 170, left: 75}, {top: 170, left: 55}, {top: 170, left: 35}, {top: 170, left: 15}, {top: 150, left: 15}
+            {top: 132, left: 15}, {top: 132, left: 35}, {top: 132, left: 55}, {top: 132, left: 75}, {top: 132, left: 95},
+            {top: 95, left: 132}, {top: 75, left: 132}, {top: 55, left: 132}, {top: 35, left: 132}, {top: 15, left: 132}, {top: 15, left: 152},
+            {top: 15, left: 172}, {top: 35, left: 172}, {top: 55, left: 172}, {top: 75, left: 172}, {top: 95, left: 172},
+            {top: 132, left: 209}, {top: 132, left: 229}, {top: 132, left: 249}, {top: 132, left: 269}, {top: 132, left: 289}, {top: 152, left: 289},
+            {top: 172, left: 289}, {top: 172, left: 269}, {top: 172, left: 249}, {top: 172, left: 229}, {top: 172, left: 209},
+            {top: 209, left: 172}, {top: 229, left: 172}, {top: 249, left: 172}, {top: 269, left: 172}, {top: 289, left: 172}, {top: 289, left: 152},
+            {top: 289, left: 132}, {top: 269, left: 132}, {top: 249, left: 132}, {top: 229, left: 132}, {top: 209, left: 132},
+            {top: 172, left: 95}, {top: 172, left: 75}, {top: 172, left: 55}, {top: 172, left: 35}, {top: 172, left: 15}, {top: 152, left: 15}
         ];
 
         const yardCoordsUser = [
@@ -574,22 +572,28 @@
             }
         }
 
-        // --- MISSIONS ON HOME PAGE ---
+        // --- MISSIONS & CPAgrip POSTBACK INTEGRATION ---
         function loadMissions() {
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('missionsList');
                 if(!list) return;
                 list.innerHTML = "";
                 if (!snapshot.exists()) { list.innerHTML = "<p style='color:#ccc; font-size:13px;'>No missions available right now.</p>"; return; }
+                
                 snapshot.forEach(child => {
                     let m = child.val();
                     let mId = child.key;
+                    let isCompleted = currentUser && userData.completedMissions && userData.completedMissions[mId];
+
                     list.innerHTML += `
                         <div class="mission-card">
                             <img src="${m.image}" class="mission-img">
                             <h4 style="margin:5px 0; color:#ffd700;">${m.title}</h4>
                             <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize}</p>
-                            <button style="padding:8px; font-size:13px;" onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">View Details</button>
+                            ${isCompleted 
+                                ? '<button style="background:#555; color:#aaa; cursor:not-allowed;" disabled>Completed ✓</button>' 
+                                : `<button style="padding:8px; font-size:13px;" onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">Start Mission</button>`
+                            }
                         </div>
                     `;
                 });
@@ -597,25 +601,30 @@
         }
 
         function openMissionDetail(title, img, link, mId, prize) {
+            if (currentUser && userData.completedMissions && userData.completedMissions[mId]) {
+                alert("Aap ye mission pehle hi complete kar chuke hain!");
+                return;
+            }
             document.getElementById('detTitle').innerText = title;
             document.getElementById('detImg').src = img;
-            activeMissionLink = link;
-            window.currentMissionId = mId;
-            window.currentMissionPrize = prize;
+            
+            // Append subid parameter with user UID for CPAgrip postback tracking
+            let finalLink = link;
+            if (currentUser) {
+                let sep = finalLink.includes('?') ? '&' : '?';
+                finalLink += sep + 'subid=' + currentUser.uid;
+            }
+            activeMissionLink = finalLink;
+
             document.getElementById('tabHome').classList.add('hidden');
             document.getElementById('secMissionDetail').classList.remove('hidden');
         }
 
         function startMissionLink() {
             window.open(activeMissionLink, '_blank');
-            setTimeout(() => {
-                if(confirm("Mission complete ho gaya? OK dabayein reward claim karne ke liye.")) {
-                    updateWallet(window.currentMissionPrize);
-                    alert("Reward Added: ₹" + window.currentMissionPrize);
-                    showGameSec('secDashboard');
-                    switchTab('tabHome');
-                }
-            }, 3000);
+            alert("Mission link Chrome mein khul gayi hai! Task successfully complete karne ke baad reward automatically aapke wallet mein add ho jayega.");
+            showGameSec('secDashboard');
+            switchTab('tabHome');
         }
 
         // --- LEADERBOARD ---
@@ -654,6 +663,42 @@
                     `;
                 });
             });
+
+            // Load Admin Missions List for Deletion
+            db.ref('missions').on('value', snapshot => {
+                let list = document.getElementById('adminMissionsList');
+                if(!list) return;
+                list.innerHTML = "<h4 style='color:#ffd700; font-size:13px; margin:10px 0 5px 0;'>Manage Existing Missions:</h4>";
+                if (!snapshot.exists()) { list.innerHTML += "<p style='font-size:12px; color:#aaa;'>No missions found.</p>"; return; }
+                snapshot.forEach(child => {
+                    let m = child.val();
+                    let mId = child.key;
+                    list.innerHTML += `
+                        <div style="background:#1a1a1a; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #444; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="font-size:12px; color:#fff; display:block; font-weight:bold;">${m.title}</span>
+                                <small style="color:#00e676; font-size:11px;">Prize: ₹${m.prize}</small>
+                            </div>
+                            <button style="background:#d32f2f; color:#fff; padding:4px 8px; font-size:11px; width:auto; margin:0;" onclick="adminDeleteMission('${mId}')">Delete</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function adminDeleteMission(mId) {
+            if (confirm("Kya aap waqai is mission ko delete karna chahte hain? Yeh sabhi users ke data se bhi remove ho jayega.")) {
+                // Remove mission from missions node
+                db.ref('missions/' + mId).remove().then(() => {
+                    // Clean up completedMissions from all users data
+                    db.ref('users').once('value', snapshot => {
+                        snapshot.forEach(userSnap => {
+                            db.ref('users/' + userSnap.key + '/completedMissions/' + mId).remove();
+                        });
+                    });
+                    alert("Mission successfully deleted from all users and database!");
+                });
+            }
         }
 
         function renderUserList(users) {
