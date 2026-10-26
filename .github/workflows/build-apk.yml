@@ -27,7 +27,8 @@ jobs:
         cp index.html android-app/app/src/main/assets/
 
         cat << 'EOF' > android-app/app/src/main/AndroidManifest.xml
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.apk.earning">
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <application
@@ -91,7 +92,7 @@ jobs:
         cat << 'EOF' > android-app/build.gradle
         buildscript {
             repositories { google(); mavenCentral() }
-            dependencies { classpath 'com.android.tools.build:gradle:8.1.0' }
+            dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
         }
         allprojects { repositories { google(); mavenCentral() } }
         EOF
@@ -104,28 +105,27 @@ jobs:
         cat << 'EOF' > android-app/app/build.gradle
         apply plugin: 'com.android.application'
         android {
-            namespace 'com.apk.earning'
-            compileSdk 34
+            compileSdkVersion 33
             defaultConfig {
                 applicationId "com.apk.earning"
                 minSdk 21
-                targetSdk 34
+                targetSdkVersion 33
                 versionCode 1
                 versionName "1.0"
             }
         }
-        dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' }
+        dependencies { implementation 'androidx.appcompat:appcompat:1.6.0' }
         EOF
 
-    - name: Build APK with Direct Gradle 8.4
+    - name: Build APK with Direct Gradle 7.5
       run: |
         cd android-app
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
         EOT
-        wget -q https://services.gradle.org/distributions/gradle-8.4-bin.zip
-        unzip -q gradle-8.4-bin.zip
-        gradle-8.4/bin/gradle assembleDebug
+        wget -q https://services.gradle.org/distributions/gradle-7.5-bin.zip
+        unzip -q gradle-7.5-bin.zip
+        gradle-7.5/bin/gradle assembleDebug
 
     - name: Upload Generated APK
       uses: actions/upload-artifact@v4
