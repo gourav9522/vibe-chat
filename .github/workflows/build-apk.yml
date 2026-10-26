@@ -18,7 +18,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Create Basic Android Project Structure
+    - name: Create Project & Setup SDK Licenses
       run: |
         mkdir -p android-app/app/src/main/assets
         mkdir -p android-app/app/src/main/java/com/apk/earning
@@ -117,13 +117,14 @@ jobs:
         dependencies { implementation 'androidx.appcompat:appcompat:1.6.0' }
         EOF
 
-    - name: Accept SDK Licenses and Install Tools
-      run: |
-        export ANDROID_HOME=/usr/local/lib/android/sdk
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.0"
+        # Automatically write Android SDK licenses to bypass any interactive prompt
+        ANDROID_HOME=/usr/local/lib/android/sdk
+        mkdir -p $ANDROID_HOME/licenses
+        echo -e "\n24333f8a43b680ff2215d038113e6b18a80b716d" > $ANDROID_HOME/licenses/android-sdk-license
+        echo -e "\nd56f5187479451eabf01fb78af6dfcb139a64810" >> $ANDROID_HOME/licenses/android-sdk-license
+        echo -e "\n84831b6509a41a7f78c593006497d3077755f1d2" > $ANDROID_HOME/licenses/android-sdk-preview-license
 
-    - name: Build APK with Direct Gradle 7.5
+    - name: Build APK with Gradle 7.5
       run: |
         cd android-app
         cat << 'EOT' > local.properties
