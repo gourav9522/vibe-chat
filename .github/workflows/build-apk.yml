@@ -27,10 +27,8 @@ jobs:
         mkdir -p android-app/app/src/main/java/com/apk/earning
         mkdir -p android-app/app/src/main/res/mipmap
 
-        # Copy index.html into assets
         cp index.html android-app/app/src/main/assets/
 
-        # Create AndroidManifest.xml
         cat << 'EOF' > android-app/app/src/main/AndroidManifest.xml
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
             package="com.apk.earning">
@@ -52,7 +50,6 @@ jobs:
         </manifest>
         EOF
 
-        # Create MainActivity.java
         cat << 'EOF' > android-app/app/src/main/java/com/apk/earning/MainActivity.java
         package com.apk.earning;
         import android.app.Activity;
@@ -95,7 +92,6 @@ jobs:
         }
         EOF
 
-        # Create build.gradle files for compilation
         cat << 'EOF' > android-app/build.gradle
         buildscript {
             repositories { google(); mavenCentral() }
@@ -134,7 +130,7 @@ jobs:
         ./gradlew assembleDebug
 
     - name: Upload Generated APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
         path: android-app/app/build/outputs/apk/debug/app-debug.apk
