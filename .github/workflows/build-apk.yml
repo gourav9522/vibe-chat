@@ -126,8 +126,7 @@ jobs:
         zipStorePath=wrapper/dists
         EOF
 
-        - name: Build APK with Gradle
-      run: |
+        - name: Build APK with Gradle run: |
         cd android-app
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
@@ -135,7 +134,6 @@ jobs:
         gradle wrapper --gradle-version 6.7.1
         chmod +x gradlew || true
         ./gradlew assembleDebug
-
 
     - name: Upload Generated APK
       uses: actions/upload-artifact@v4
