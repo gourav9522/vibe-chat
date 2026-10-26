@@ -21,8 +21,8 @@
         }
 
         .card { background: rgba(15, 25, 15, 0.9); border: 2px solid #ffd700; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); box-sizing: border-box; backdrop-filter: blur(2px); }
-        input, button, select { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
-        input, select { background: #121a12; color: #fff; }
+        input, button, select, textarea { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; font-family: inherit; }
+        input, select, textarea { background: #121a12; color: #fff; }
         button { background: linear-gradient(45deg, #00c853, #00e676); color: #000; font-weight: bold; cursor: pointer; border: none; }
         .btn-gold { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; }
         .btn-google { background: #fff; color: #757575; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; }
@@ -34,7 +34,6 @@
 
         #secWithdrawal { background: rgba(15, 25, 15, 0.95); }
         
-        /* Withdrawal 2 buttons per row grid layout with updated background image */
         .withdraw-grid {
             display: flex;
             flex-wrap: wrap;
@@ -69,6 +68,19 @@
 
         .mission-card { background: rgba(24, 36, 24, 0.95); border: 1px solid #00e676; padding: 10px; border-radius: 8px; margin-top: 8px; }
         .mission-img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
+
+        /* Full Screen Mission Popup */
+        #missionModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -137,15 +149,6 @@
                 </div>
             </div>
 
-            <!-- Mission Detail View -->
-            <div id="secMissionDetail" class="card hidden" style="margin-top:12px;">
-                <h3 id="detTitle" style="font-size:16px;">Mission Title</h3>
-                <img id="detImg" class="mission-img" src="" alt="">
-                <p style="color:#ccc; font-size:12px;">Start button dabate hi offer link Chrome mein khulegi. Task complete hone par CPAgrip postback ke zariye reward automatic aapke wallet mein add ho jayega!</p>
-                <button style="background:#00e676; color:#000;" onclick="startMissionLink()">Start Mission (Open in Chrome)</button>
-                <button class="btn-tab" onclick="switchTab('tabHome')" style="margin-top:8px;">Back to Home</button>
-            </div>
-
             <!-- Leaderboard Tab -->
             <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:12px;">
                 <h3 style="font-size:16px;">Weekly Leaderboard</h3>
@@ -179,7 +182,12 @@
                 <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)">₹1000 (Fee ₹0)</div>
             </div>
 
-            <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:8px; text-align:center;"></p>
+            <div id="withdrawalStatusBox" style="margin-top:15px; background:#112211; padding:10px; border-radius:8px; border:1px solid #00e676;">
+                <h4 style="margin:0 0 5px 0; font-size:14px; color:#ffd700;">Withdrawal Status & History</h4>
+                <p id="lblWithdrawTimer" style="color:#ffeb3b; font-size:12px; margin:4px 0;"></p>
+                <div id="withdrawalHistoryList" style="font-size:12px; max-height:120px; overflow-y:auto;">Loading history...</div>
+            </div>
+
             <button class="btn-tab" onclick="showGameSec('secDashboard'); switchTab('tabHome');" style="margin-top:12px;">Back to Home</button>
         </div>
 
@@ -247,17 +255,36 @@
 
             <h4 style="margin-top:15px; font-size:14px;">Add / Manage Missions</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
+            <textarea id="admMisDesc" placeholder="Mission Details & Instructions..." style="padding:8px; height:60px;"></textarea>
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
             <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
             <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
+            <input type="number" id="admMisDays" placeholder="Valid Days / Expiry (e.g. 7 days)" style="padding:8px;">
             <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
 
             <div id="adminMissionsList" style="margin-top:12px;"></div>
 
-            <h4 style="margin-top:15px; font-size:14px;">Withdrawal Requests</h4>
+            <h4 style="margin-top:15px; font-size:14px;">Pending Withdrawal Requests</h4>
             <div id="adminWithdrawalsList" style="font-size:13px;">Loading requests...</div>
         </div>
 
+    </div>
+
+    <!-- FULL SCREEN MISSION POPUP MODAL -->
+    <div id="missionModal" class="hidden">
+        <div class="card" style="width:100%; max-width:400px; max-height:90vh; overflow-y:auto; position:relative;">
+            <span style="position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; color:#ffd700;" onclick="closeMissionModal()">&times;</span>
+            <h3 id="modalTitle" style="color:#ffd700; margin-top:0; font-size:18px;"></h3>
+            <img id="modalImg" class="mission-img" src="">
+            <div style="background:#121a12; padding:10px; border-radius:6px; margin:8px 0; border:1px solid #333;">
+                <p style="color:#ccc; font-size:13px; margin:0;" id="modalDesc"></p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#00e676; margin:10px 0; font-weight:bold;">
+                <span id="modalPrize"></span>
+                <span id="modalExpiry" style="color:#ffeb3b;"></span>
+            </div>
+            <button id="modalStartBtn" class="btn-gold" onclick="startMissionFromModal()">Start Task</button>
+        </div>
     </div>
 
     <script>
@@ -273,8 +300,9 @@
         const db = firebase.database();
 
         let currentUser = null;
-        let userData = { wallet: 0, banned: false, completedMissions: {} };
+        let userData = { wallet: 0, banned: false, completedMissions: {}, pendingMissions: {} };
         let allUsersData = {};
+        let activeMissionId = null;
         let activeMissionLink = "";
         let titleClickCount = 0;
 
@@ -302,6 +330,7 @@
             loadMissions();
             loadLeaderboard();
             loadSavedUpi();
+            loadLocalWithdrawalHistory();
         };
 
         function saveUpiToLocalStorage() {
@@ -348,7 +377,7 @@
                         name: user.displayName || userData.name || user.email.split('@')[0]
                     });
                 } else {
-                    userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0], completedMissions: {} };
+                    userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0], completedMissions: {}, pendingMissions: {} };
                     db.ref('users/' + user.uid).set(userData);
                 }
                 
@@ -356,7 +385,6 @@
                 document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
                 checkWithdrawalTimer();
 
-                // Check daily ad status on login
                 const today = new Date().toISOString().split('T')[0];
                 let adBtn = document.getElementById('watchAdBtn');
                 if (adBtn) {
@@ -407,14 +435,13 @@
         function logout() {
             auth.signOut().then(() => {
                 currentUser = null;
-                userData = { wallet: 0, banned: false, completedMissions: {} };
+                userData = { wallet: 0, banned: false, completedMissions: {}, pendingMissions: {} };
                 showLoginScreen();
             });
         }
 
         function showGameSec(id) {
             document.getElementById('tabHome').classList.add('hidden');
-            document.getElementById('secMissionDetail').classList.add('hidden');
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
@@ -429,11 +456,12 @@
 
         function showWithdrawalSection() {
             loadSavedUpi();
+            loadLocalWithdrawalHistory();
+            checkWithdrawalTimer();
             document.getElementById('tabHome').classList.add('hidden');
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
-            document.getElementById('secMissionDetail').classList.add('hidden');
             document.getElementById('secWithdrawal').classList.remove('hidden');
         }
 
@@ -443,7 +471,6 @@
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
-            document.getElementById('secMissionDetail').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
         }
 
@@ -499,11 +526,11 @@
             });
         }
 
+        // --- WITHDRAWAL & LOCAL STORAGE HISTORY ---
         function requestCustomWithdrawal(payoutAmt, deductAmt) {
             let upi = document.getElementById('txtUpi').value.trim();
             if (!upi) { alert("Kripya pehle apni UPI ID daalein!"); return; }
             
-            // Save UPI automatically to localStorage
             localStorage.setItem('saved_upi', upi);
 
             if (userData.wallet < deductAmt) { 
@@ -511,31 +538,155 @@
                 return; 
             }
 
+            let lockTime = Date.now() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('lock_' + currentUser.uid, lockTime);
+
             updateWallet(-deductAmt);
-            db.ref('withdrawals').push({ 
-                uid: currentUser.uid, 
-                email: userData.email, 
-                upi: upi, 
-                amount: payoutAmt, 
-                deducted: deductAmt, 
-                time: Date.now() 
-            });
-            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke saved UPI (${upi}) par bhej diye jayenge.`);
+            
+            let reqData = {
+                uid: currentUser.uid,
+                email: userData.email,
+                upi: upi,
+                amount: payoutAmt,
+                deducted: deductAmt,
+                status: 'Pending',
+                time: Date.now()
+            };
+
+            db.ref('withdrawals').push(reqData);
+            
+            alert(`Withdrawal Request Submitted! ₹${payoutAmt} pending mein hai.`);
+            checkWithdrawalTimer();
             showGameSec('secDashboard');
             switchTab('tabHome');
         }
 
         function checkWithdrawalTimer() {
-            let lock = localStorage.getItem('lock_' + currentUser.uid);
-            let lbl = document.getElementById('lblWithdrawStatus');
+            let lock = localStorage.getItem('lock_' + currentUser ? currentUser.uid : 'guest');
+            let lbl = document.getElementById('lblWithdrawTimer');
+            if (!lbl) return;
             if (lock && Date.now() < lock) {
                 let rem = lock - Date.now();
                 let hrs = Math.floor(rem / 3600000);
-                lbl.innerText = `Wait 24 hours: ${hrs} hours remaining`;
-            } else { if(lbl) lbl.innerText = ""; }
+                let mins = Math.floor((rem % 3600000) / 60000);
+                lbl.innerText = `⏳ Wait 24 hours: ${hrs}h ${mins}m remaining`;
+            } else { 
+                lbl.innerText = "✅ You are eligible to withdraw!"; 
+            }
         }
 
-        // --- ACCURATELY ADJUSTED LUDO PATH COORDINATES (300x300 Board) ---
+        function loadLocalWithdrawalHistory() {
+            let listDiv = document.getElementById('withdrawalHistoryList');
+            if(!listDiv) return;
+            
+            let localHistory = JSON.parse(localStorage.getItem('withdrawal_history_' + (currentUser ? currentUser.uid : '')) || '[]');
+            
+            db.ref('withdrawals').orderByChild('uid').equalTo(currentUser ? currentUser.uid : 'none').once('value', snapshot => {
+                let pendingHtml = "";
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        let w = child.val();
+                        pendingHtml += `<div style="padding:4px 0; border-bottom:1px dashed #333;">₹${w.amount} to ${w.upi} - <span style="color:#ffeb3b; font-weight:bold;">Pending ⏳</span></div>`;
+                    });
+                }
+
+                let successHtml = "";
+                localHistory.forEach(h => {
+                    successHtml += `<div style="padding:4px 0; border-bottom:1px dashed #333;">₹${h.amount} to ${h.upi} - <span style="color:#00e676; font-weight:bold;">Successful ✅</span></div>`;
+                });
+
+                listDiv.innerHTML = pendingHtml + successHtml || "<p style='color:#aaa; text-align:center;'>No withdrawal history.</p>";
+            });
+        }
+
+        // --- MISSIONS & POPUP MODAL ---
+        function loadMissions() {
+            db.ref('missions').on('value', snapshot => {
+                let list = document.getElementById('missionsList');
+                if(!list) return;
+                list.innerHTML = "";
+                if (!snapshot.exists()) { list.innerHTML = "<p style='color:#ccc; font-size:13px;'>No missions available right now.</p>"; return; }
+                
+                let now = Date.now();
+                snapshot.forEach(child => {
+                    let m = child.val();
+                    let mId = child.key;
+                    
+                    // Check expiration based on days
+                    let createdAt = m.createdAt || now;
+                    let expiryDays = m.days || 7;
+                    let expiryTime = createdAt + (expiryDays * 24 * 60 * 60 * 1000);
+                    
+                    if (now > expiryTime) {
+                        db.ref('missions/' + mId).remove();
+                        return;
+                    }
+
+                    let isCompleted = currentUser && userData.completedMissions && userData.completedMissions[mId];
+                    let isPending = currentUser && userData.pendingMissions && userData.pendingMissions[mId];
+
+                    if (isCompleted) return; // Hide completed/expired missions to save storage
+
+                    let btnText = isPending ? "Pending ⏳" : "Start Mission";
+                    let btnStyle = isPending ? "background:#ff9800; color:#000;" : "";
+
+                    list.innerHTML += `
+                        <div class="mission-card">
+                            <img src="${m.image}" class="mission-img">
+                            <h4 style="margin:5px 0; color:#ffd700;">${m.title}</h4>
+                            <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize} | Validity: ${expiryDays} Days</p>
+                            <button style="padding:8px; font-size:13px; ${btnStyle}" onclick="openMissionModal('${mId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.image)}', '${encodeURIComponent(m.link)}', '${encodeURIComponent(m.desc || "Complete the task to earn reward.")}', ${m.prize}, ${expiryDays})">${btnText}</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function openMissionModal(mId, title, img, link, desc, prize, days) {
+            activeMissionId = mId;
+            let finalLink = decodeURIComponent(link);
+            if (currentUser) {
+                let sep = finalLink.includes('?') ? '&' : '?';
+                finalLink += sep + 'subid=' + currentUser.uid;
+            }
+            activeMissionLink = finalLink;
+
+            document.getElementById('modalTitle').innerText = decodeURIComponent(title);
+            document.getElementById('modalImg').src = decodeURIComponent(img);
+            document.getElementById('modalDesc').innerText = decodeURIComponent(desc);
+            document.getElementById('modalPrize').innerText = "Prize: ₹" + prize;
+            document.getElementById('modalExpiry').innerText = "Valid for: " + days + " Days";
+
+            let isPending = currentUser && userData.pendingMissions && userData.pendingMissions[mId];
+            let startBtn = document.getElementById('modalStartBtn');
+            if (isPending) {
+                startBtn.innerText = "Task Pending (Verification in progress...)";
+                startBtn.style.background = "#ff9800";
+            } else {
+                startBtn.innerText = "Start Task";
+                startBtn.style.background = "linear-gradient(45deg, #d4af37, #ffd700)";
+            }
+
+            document.getElementById('missionModal').classList.remove('hidden');
+        }
+
+        function closeMissionModal() {
+            document.getElementById('missionModal').classList.add('hidden');
+        }
+
+        function startMissionFromModal() {
+            if (!currentUser || !activeMissionId) return;
+
+            // Mark as pending in Firebase
+            db.ref('users/' + currentUser.uid + '/pendingMissions/' + activeMissionId).set(true);
+            
+            window.open(activeMissionLink, '_blank');
+            alert("Mission link khul gayi hai! Task complete hone par signal aate hi reward aapke wallet mein add ho jayega aur mission hide ho jayega.");
+            closeMissionModal();
+            loadMissions();
+        }
+
+        // --- LUDO GAME ---
         let currentEntry = 2;
         let userTokenPos = [-1, -1, -1, -1];
         let botTokenPos = [-1, -1, -1, -1];
@@ -553,12 +704,8 @@
             {top: 172, left: 95}, {top: 172, left: 75}, {top: 172, left: 55}, {top: 172, left: 35}, {top: 172, left: 15}, {top: 152, left: 15}
         ];
 
-        const yardCoordsUser = [
-            {top: 25, left: 25}, {top: 25, left: 55}, {top: 55, left: 25}, {top: 55, left: 55}
-        ];
-        const yardCoordsBot = [
-            {top: 225, left: 225}, {top: 225, left: 255}, {top: 255, left: 225}, {top: 255, left: 255}
-        ];
+        const yardCoordsUser = [{top: 25, left: 25}, {top: 25, left: 55}, {top: 55, left: 25}, {top: 55, left: 55}];
+        const yardCoordsBot = [{top: 225, left: 225}, {top: 225, left: 255}, {top: 255, left: 225}, {top: 255, left: 255}];
 
         function startLudoGame() {
             currentEntry = parseFloat(document.getElementById('ludoEntryFee').value);
@@ -568,7 +715,7 @@
             userTokenPos = [-1, -1, -1, -1];
             botTokenPos = [-1, -1, -1, -1];
             isUserTurn = true;
-            document.getElementById('lblLudoStatus').innerText = "Aapka turn! Dice roll karein (6 aane par token khulega).";
+            document.getElementById('lblLudoStatus').innerText = "Aapka turn! Dice roll karein.";
             updateTokenUI();
             showGameSec('secLudoPlay');
         }
@@ -577,33 +724,25 @@
             if (!isUserTurn) return;
             currentDice = Math.floor(Math.random() * 6) + 1;
             document.getElementById('diceDisplay').innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][currentDice - 1];
-            document.getElementById('lblLudoStatus').innerText = `Aapko mila: ${currentDice}. Chalne ke liye apni goti par click karein!`;
+            document.getElementById('lblLudoStatus').innerText = `Aapko mila: ${currentDice}. Goti par click karein!`;
         }
 
         function moveToken(idx) {
             if (!isUserTurn || currentDice === 0) return;
-            
             let pos = userTokenPos[idx];
             if (pos === -1) {
-                if (currentDice === 6) {
-                    userTokenPos[idx] = 0;
-                    currentDice = 0;
-                    updateTokenUI();
-                    checkBotTurn();
-                } else {
-                    alert("6 aane par hi token yard se bahar niklega!");
-                }
+                if (currentDice === 6) { userTokenPos[idx] = 0; currentDice = 0; updateTokenUI(); checkBotTurn(); }
+                else { alert("6 aane par token bahar aayega!"); }
             } else {
                 pos += currentDice;
                 if (pos >= pathCoords.length) pos = pathCoords.length - 1;
                 userTokenPos[idx] = pos;
                 currentDice = 0;
                 updateTokenUI();
-                
                 if (userTokenPos.every(p => p >= pathCoords.length - 1)) {
                     let winAmt = currentEntry * 1.9;
                     updateWallet(winAmt);
-                    alert(`Badhai ho! Aapne Ludo match jeet liya aur ₹${winAmt} mil gaye!`);
+                    alert(`Jeet gaye! ₹${winAmt} mil gaye!`);
                     showGameSec('secDashboard');
                     return;
                 }
@@ -614,21 +753,17 @@
         function checkBotTurn() {
             isUserTurn = false;
             document.getElementById('lblLudoStatus').innerText = "Bot chal raha hai...";
-            
             setTimeout(() => {
                 let botDice = Math.floor(Math.random() * 6) + 1;
                 let activeBotIdx = botTokenPos.findIndex(p => p !== -1);
-                
-                if (activeBotIdx === -1 && botDice === 6) {
-                    botTokenPos[0] = 0;
-                } else if (activeBotIdx !== -1) {
+                if (activeBotIdx === -1 && botDice === 6) { botTokenPos[0] = 0; }
+                else if (activeBotIdx !== -1) {
                     botTokenPos[activeBotIdx] += botDice;
                     if (botTokenPos[activeBotIdx] >= pathCoords.length) botTokenPos[activeBotIdx] = pathCoords.length - 1;
                 }
-                
                 updateTokenUI();
                 isUserTurn = true;
-                document.getElementById('lblLudoStatus').innerText = "Aapka turn! Dice roll karein.";
+                document.getElementById('lblLudoStatus').innerText = "Aapka turn!";
             }, 1200);
         }
 
@@ -636,78 +771,14 @@
             for (let i = 0; i < 4; i++) {
                 let el = document.getElementById('u' + (i + 1));
                 let p = userTokenPos[i];
-                if (p === -1) {
-                    el.style.top = yardCoordsUser[i].top + 'px';
-                    el.style.left = yardCoordsUser[i].left + 'px';
-                } else {
-                    el.style.top = pathCoords[p].top + 'px';
-                    el.style.left = pathCoords[p].left + 'px';
-                }
+                el.style.top = (p === -1 ? yardCoordsUser[i].top : pathCoords[p].top) + 'px';
+                el.style.left = (p === -1 ? yardCoordsUser[i].left : pathCoords[p].left) + 'px';
 
                 let bel = document.getElementById('b' + (i + 1));
                 let bp = botTokenPos[i];
-                if (bp === -1) {
-                    bel.style.top = yardCoordsBot[i].top + 'px';
-                    bel.style.left = yardCoordsBot[i].left + 'px';
-                } else {
-                    bel.style.top = pathCoords[bp].top + 'px';
-                    bel.style.left = pathCoords[bp].left + 'px';
-                }
+                bel.style.top = (bp === -1 ? yardCoordsBot[i].top : pathCoords[bp].top) + 'px';
+                bel.style.left = (bp === -1 ? yardCoordsBot[i].left : pathCoords[bp].left) + 'px';
             }
-        }
-
-        // --- MISSIONS & CPAgrip POSTBACK INTEGRATION ---
-        function loadMissions() {
-            db.ref('missions').on('value', snapshot => {
-                let list = document.getElementById('missionsList');
-                if(!list) return;
-                list.innerHTML = "";
-                if (!snapshot.exists()) { list.innerHTML = "<p style='color:#ccc; font-size:13px;'>No missions available right now.</p>"; return; }
-                
-                snapshot.forEach(child => {
-                    let m = child.val();
-                    let mId = child.key;
-                    let isCompleted = currentUser && userData.completedMissions && userData.completedMissions[mId];
-
-                    list.innerHTML += `
-                        <div class="mission-card">
-                            <img src="${m.image}" class="mission-img">
-                            <h4 style="margin:5px 0; color:#ffd700;">${m.title}</h4>
-                            <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize}</p>
-                            ${isCompleted 
-                                ? '<button style="background:#555; color:#aaa; cursor:not-allowed;" disabled>Completed ✓</button>' 
-                                : `<button style="padding:8px; font-size:13px;" onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">Start Mission</button>`
-                            }
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        function openMissionDetail(title, img, link, mId, prize) {
-            if (currentUser && userData.completedMissions && userData.completedMissions[mId]) {
-                alert("Aap ye mission pehle hi complete kar chuke hain!");
-                return;
-            }
-            document.getElementById('detTitle').innerText = title;
-            document.getElementById('detImg').src = img;
-            
-            let finalLink = link;
-            if (currentUser) {
-                let sep = finalLink.includes('?') ? '&' : '?';
-                finalLink += sep + 'subid=' + currentUser.uid;
-            }
-            activeMissionLink = finalLink;
-
-            document.getElementById('tabHome').classList.add('hidden');
-            document.getElementById('secMissionDetail').classList.remove('hidden');
-        }
-
-        function startMissionLink() {
-            window.open(activeMissionLink, '_blank');
-            alert("Mission link Chrome mein khul gayi hai! Task successfully complete karne ke baad reward automatically aapke wallet mein add ho jayega.");
-            showGameSec('secDashboard');
-            switchTab('tabHome');
         }
 
         // --- LEADERBOARD ---
@@ -730,18 +801,19 @@
                 allUsersData = snapshot.val() || {};
                 renderUserList(allUsersData);
             });
+
             db.ref('withdrawals').on('value', snapshot => {
                 let list = document.getElementById('adminWithdrawalsList');
                 if(!list) return;
                 list.innerHTML = "";
-                if (!snapshot.exists()) { list.innerHTML = "<p>No withdrawal requests.</p>"; return; }
+                if (!snapshot.exists()) { list.innerHTML = "<p>No pending withdrawals.</p>"; return; }
                 snapshot.forEach(child => {
                     let w = child.val();
                     let id = child.key;
                     list.innerHTML += `
                         <div style="background:#222; padding:6px; margin-top:4px; border-radius:4px;">
-                            <p>${w.email} | UPI: ${w.upi} | Payout: ₹${w.amount} (Deducted: ₹${w.deducted || w.amount})</p>
-                            <button style="background:#00e676; padding:4px; color:#000;" onclick="approveWithdrawal('${id}')">Approve & Pay</button>
+                            <p>${w.email} | UPI: ${w.upi} | Payout: ₹${w.amount}</p>
+                            <button style="background:#00e676; padding:4px; color:#000;" onclick="approveWithdrawal('${id}', '${w.uid}', ${w.amount}, '${w.upi}')">Approve & Pay</button>
                         </div>
                     `;
                 });
@@ -756,7 +828,7 @@
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('adminMissionsList');
                 if(!list) return;
-                list.innerHTML = "<h4 style='color:#ffd700; font-size:13px; margin:10px 0 5px 0;'>Manage Existing Missions:</h4>";
+                list.innerHTML = "<h4 style='color:#ffd700; font-size:13px; margin:10px 0 5px 0;'>Manage Missions:</h4>";
                 if (!snapshot.exists()) { list.innerHTML += "<p style='font-size:12px; color:#aaa;'>No missions found.</p>"; return; }
                 snapshot.forEach(child => {
                     let m = child.val();
@@ -765,7 +837,7 @@
                         <div style="background:#1a1a1a; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #444; display:flex; justify-content:space-between; align-items:center;">
                             <div>
                                 <span style="font-size:12px; color:#fff; display:block; font-weight:bold;">${m.title}</span>
-                                <small style="color:#00e676; font-size:11px;">Prize: ₹${m.prize}</small>
+                                <small style="color:#00e676; font-size:11px;">₹${m.prize} | Days: ${m.days || 7}</small>
                             </div>
                             <button style="background:#d32f2f; color:#fff; padding:4px 8px; font-size:11px; width:auto; margin:0;" onclick="adminDeleteMission('${mId}')">Delete</button>
                         </div>
@@ -775,43 +847,63 @@
         }
 
         function adminDeleteMission(mId) {
-            if (confirm("Kya aap waqai is mission ko delete karna chahte hain? Yeh sabhi users ke data se bhi remove ho jayega.")) {
-                db.ref('missions/' + mId).remove().then(() => {
-                    db.ref('users').once('value', snapshot => {
-                        snapshot.forEach(userSnap => {
-                            db.ref('users/' + userSnap.key + '/completedMissions/' + mId).remove();
-                        });
-                    });
-                    alert("Mission successfully deleted from all users and database!");
-                });
+            if (confirm("Mission delete karein?")) {
+                db.ref('missions/' + mId).remove().then(() => alert("Mission deleted successfully!"));
             }
+        }
+
+        function adminAddMission() {
+            let title = document.getElementById('admMisTitle').value;
+            let desc = document.getElementById('admMisDesc').value;
+            let image = document.getElementById('admMisImg').value;
+            let link = document.getElementById('admMisLink').value;
+            let prize = parseFloat(document.getElementById('admMisPrize').value);
+            let days = parseInt(document.getElementById('admMisDays').value) || 7;
+
+            if (title && image && link && !isNaN(prize)) {
+                db.ref('missions').push({ title, desc, image, link, prize, days, createdAt: Date.now() });
+                alert("Mission successfully published!");
+                document.getElementById('admMisTitle').value = "";
+                document.getElementById('admMisDesc').value = "";
+                document.getElementById('admMisImg').value = "";
+                document.getElementById('admMisLink').value = "";
+                document.getElementById('admMisPrize').value = "";
+                document.getElementById('admMisDays').value = "";
+            } else { alert("Sabhi fields bharein!"); }
+        }
+
+        function approveWithdrawal(id, uid, amount, upi) {
+            // Save to user's local storage history
+            let historyKey = 'withdrawal_history_' + uid;
+            let existingHistory = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            existingHistory.push({ amount, upi, time: Date.now() });
+            localStorage.setItem(historyKey, JSON.stringify(existingHistory));
+
+            // Remove from global Firebase withdrawals to save storage
+            db.ref('withdrawals/' + id).remove().then(() => {
+                alert("Withdrawal approved, saved to local history, and removed from server!");
+                loadAdminData();
+            });
         }
 
         function renderUserList(users) {
             let div = document.getElementById('adminUserList');
             if(!div) return;
             div.innerHTML = "";
-            let count = 0;
             for (let uid in users) {
                 let u = users[uid];
-                let displayName = u.name || u.email || 'User';
-                count++;
                 div.innerHTML += `
                     <div style="border-bottom:1px solid #333; padding:6px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <strong style="color:#ffd700; font-size:12px; display:block;">${displayName}</strong>
-                            <small style="color:#aaa; font-size:10px;">${u.email || ''}</small>
-                            <div style="color:#00e676; font-size:12px; font-weight:bold;">Wallet: ₹${(u.wallet || 0).toFixed(2)}</div>
+                            <strong style="color:#ffd700; font-size:12px; display:block;">${u.name || u.email}</strong>
+                            <div style="color:#00e676; font-size:12px;">₹${(u.wallet || 0).toFixed(2)}</div>
                         </div>
                         <div>
                             <button style="padding:4px 8px; font-size:11px; width:auto; background:#d4af37; color:#000;" onclick="adminEditCoin('${uid}')">Edit Coin</button>
-                            <button style="padding:4px 8px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff; margin-top:2px;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
+                            <button style="padding:4px 8px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
                         </div>
                     </div>
                 `;
-            }
-            if (count === 0) {
-                div.innerHTML = "<p style='color:#aaa; font-size:12px; text-align:center;'>No users found in database.</p>";
             }
         }
 
@@ -820,9 +912,7 @@
             let filtered = {};
             for (let uid in allUsersData) {
                 let u = allUsersData[uid];
-                let nameMatch = u.name && u.name.toLowerCase().includes(query);
-                let emailMatch = u.email && u.email.toLowerCase().includes(query);
-                if (nameMatch || emailMatch) {
+                if ((u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query))) {
                     filtered[uid] = u;
                 }
             }
@@ -830,55 +920,26 @@
         }
 
         function adminEditCoin(uid) {
-            let newBal = prompt("Enter new wallet balance/coins:");
+            let newBal = prompt("Enter new wallet balance:");
             if (newBal !== null && !isNaN(newBal)) {
                 db.ref('users/' + uid + '/wallet').set(parseFloat(newBal));
-                alert("Coins updated successfully!");
+                alert("Updated!");
             }
         }
 
         function adminToggleBan(uid, currentStatus) {
             db.ref('users/' + uid + '/banned').set(!currentStatus);
-            alert("User status updated!");
+            alert("Status updated!");
         }
 
         function saveAdLink() {
             let link = document.getElementById('admAdLink').value.trim();
-            if (link) {
-                db.ref('settings/adLink').set(link);
-                alert("Extra Mission Link saved successfully!");
-            } else {
-                alert("Kripya valid link daalein!");
-            }
+            if (link) { db.ref('settings/adLink').set(link); alert("Saved!"); }
         }
 
         function saveAdPrize() {
             let prize = parseFloat(document.getElementById('admAdPrize').value);
-            if (!isNaN(prize)) {
-                db.ref('settings/adPrize').set(prize);
-                alert("Extra Mission Prize saved successfully!");
-            } else {
-                alert("Kripya valid prize amount daalein!");
-            }
-        }
-
-        function adminAddMission() {
-            let title = document.getElementById('admMisTitle').value;
-            let image = document.getElementById('admMisImg').value;
-            let link = document.getElementById('admMisLink').value;
-            let prize = parseFloat(document.getElementById('admMisPrize').value);
-            if (title && image && link && !isNaN(prize)) {
-                db.ref('missions').push({ title, image, link, prize });
-                alert("Mission added successfully!");
-                document.getElementById('admMisTitle').value = "";
-                document.getElementById('admMisImg').value = "";
-                document.getElementById('admMisLink').value = "";
-                document.getElementById('admMisPrize').value = "";
-            } else { alert("Sabhi fields bharein!"); }
-        }
-
-        function approveWithdrawal(id) {
-            db.ref('withdrawals/' + id).remove().then(() => alert("Withdrawal approved and cleared!"));
+            if (!isNaN(prize)) { db.ref('settings/adPrize').set(prize); alert("Saved!"); }
         }
 
         function shareReferral() {
