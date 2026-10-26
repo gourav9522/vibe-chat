@@ -3,83 +3,565 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APK Auto-Healing Admin Panel</title>
+    <title>APK Earning App</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: #1e293b; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #38bdf8; }
-        label { display: block; margin-top: 10px; font-size: 14px; }
-        input { width: 100%; padding: 10px; margin-top: 5px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; margin-top: 20px; background: #38bdf8; color: #0f172a; border: none; padding: 12px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #0ea5e9; }
-        #status { margin-top: 15px; text-align: center; font-weight: bold; }
+        body { background: linear-gradient(135deg, #0f0f0f, #1a1a1a); color: #ffd700; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 12px; overflow-x: hidden; }
+        .coin-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; opacity: 0.15; background-image: radial-gradient(#ffd700 15%, transparent 16%); background-size: 30px 30px; }
+        .card { background: rgba(30, 30, 30, 0.95); border: 2px solid #ffd700; padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        input, button, select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
+        input, select { background: #121212; color: #fff; }
+        button { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; font-weight: bold; cursor: pointer; }
+        .btn-google { background: #db4437; color: #fff; border: none; }
+        .btn-spin { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
+        .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
+        .btn-tab { background: #222; color: #ffd700; border: 1px solid #ffd700; margin: 4px 0; }
+        .hidden { display: none; }
+        .wallet { font-size: 28px; font-weight: bold; color: #00e676; }
+        
+        /* Spin Wheel with Needle */
+        .wheel-container { position: relative; width: 260px; height: 260px; margin: 20px auto; }
+        #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #ffd700; transition: transform 3s cubic-bezier(0.15, 0.85, 0.15, 1); }
+        .wheel-needle { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 25px solid #ff5722; z-index: 10; }
+
+        .mission-card { background: #252525; border: 1px solid #ffd700; padding: 12px; border-radius: 8px; margin-top: 10px; position: relative; z-index: 5; }
+        .mission-img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
+    <div class="coin-bg"></div>
 
-<div class="container">
-    <h2>APK Admin Panel</h2>
-    <form id="gameForm">
-        <label>Game ID (Jaise: free_fire_mod):</label>
-        <input type="text" id="game_id" required placeholder="free_fire_2018">
+    <!-- 1. LOGIN SECTION -->
+    <div id="secLogin" class="card" style="text-align:center; margin-top: 60px;">
+        <h2 style="color: #ffd700;" onclick="handleTitleTap()">APK Earning App</h2>
+        <p style="color:#aaa;">Golden Earning Platform</p>
+        <button class="btn-google" onclick="googleLogin()">Login with Google (Gmail)</button>
+        <div style="margin:15px 0; color:#888;">OR</div>
+        <input type="email" id="txtEmail" placeholder="Enter Email">
+        <input type="password" id="txtPass" placeholder="Enter Password">
+        <button onclick="emailLogin()" style="margin-top:10px;">Login / Register with Email</button>
+    </div>
 
-        <label>Source Page URL (Jahan se link scrape hogi):</label>
-        <input type="url" id="source_url" required placeholder="https://example.com/game-download">
+    <!-- 2. DASHBOARD SECTION -->
+    <div id="secDashboard" class="card hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <small style="color:#aaa;">Wallet Balance</small>
+                <div class="wallet" id="lblWallet">₹0.00</div>
+            </div>
+            <button class="btn-tab" style="padding:6px 12px; font-size:12px; width:auto;" onclick="logout()">Logout</button>
+        </div>
 
-        <label>Current Download Link (Abhi wali link):</label>
-        <input type="url" id="download_link" required placeholder="https://example.com/download.apk">
+        <h2 style="text-align:center; color:#ffd700; font-size:18px; margin:10px 0; cursor:pointer;" onclick="handleTitleTap()">APK Earning App</h2>
 
-        <label>Blogger Post ID (Blogger post ka ID):</label>
-        <input type="text" id="blogger_post_id" required placeholder="2982238408328855288">
+        <div style="display:flex; gap:4px; margin-top:10px;">
+            <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
+            <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
+            <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
+            <button class="btn-tab" onclick="switchTab('tabRefer')">Refer</button>
+        </div>
 
-        <button type="button" onclick="saveData()">Firebase mein Save Karein</button>
-    </form>
-    <div id="status"></div>
-</div>
+        <!-- Home Tab -->
+        <div id="tabHome" class="tab-content" style="margin-top:15px;">
+            <button class="btn-ludo" onclick="showSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
+            <button class="btn-spin" onclick="showSec('secSpin')">Spin Wheel (₹1 Entry)</button>
 
-<script>
-    async function saveData() {
-        const gameId = document.getElementById('game_id').value.trim();
-        const sourceUrl = document.getElementById('source_url').value.trim();
-        const downloadLink = document.getElementById('download_link').value.trim();
-        const bloggerPostId = document.getElementById('blogger_post_id').value.trim();
-        const statusDiv = document.getElementById('status');
+            <div style="margin-top:20px; background:rgba(20,20,20,0.8); padding:12px; border-radius:8px; border:1px solid #ffd700;">
+                <h4>UPI Withdrawal (Min. ₹50)</h4>
+                <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI">
+                <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)">
+                <button onclick="requestWithdrawal()">Withdraw to UPI</button>
+                <p id="lblWithdrawStatus" style="color:#ff9800; font-size:13px; margin-top:8px;"></p>
+            </div>
+        </div>
 
-        if(!gameId || !sourceUrl || !downloadLink || !bloggerPostId) {
-            statusDiv.style.color = '#f87171';
-            statusDiv.innerText = "Bhai, saare fields bharna zaroori hain!";
-            return;
+        <!-- Spin Wheel Tab -->
+        <div id="secSpin" class="card hidden" style="margin-top:15px; border:none; background:transparent; text-align:center;">
+            <h3>Lucky Spin Wheel (Entry: ₹1)</h3>
+            <div class="wheel-container">
+                <div class="wheel-needle"></div>
+                <canvas id="wheelCanvas" width="300" height="300"></canvas>
+            </div>
+            <button class="btn-spin" onclick="spinTheWheel()" style="margin-top:10px;">Spin Now (₹1)</button>
+            <button class="btn-tab" onclick="showSec('secDashboard'); switchTab('tabHome');" style="margin-top:10px;">Back</button>
+        </div>
+
+        <!-- Missions Tab -->
+        <div id="tabMissions" class="tab-content hidden" style="margin-top:15px;">
+            <h3>CPAgrip & App Missions</h3>
+            <div id="missionsList">Loading missions...</div>
+        </div>
+
+        <!-- Mission Detail View -->
+        <div id="secMissionDetail" class="card hidden" style="margin-top:15px;">
+            <h3 id="detTitle">Mission Title</h3>
+            <img id="detImg" class="mission-img" src="" alt="">
+            <p style="color:#ccc;">Start button dabate hi link Chrome mein khulegi.</p>
+            <button onclick="startMissionLink()" style="background:#00e676; color:#000;">Start Mission (Open in Chrome)</button>
+            <button class="btn-tab" onclick="showTab('tabMissions')" style="margin-top:10px;">Back to Missions</button>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:15px;">
+            <h3>Weekly Leaderboard</h3>
+            <div id="leaderboardList">Loading...</div>
+        </div>
+
+        <!-- Refer Tab -->
+        <div id="tabRefer" class="tab-content hidden" style="margin-top:15px;">
+            <h3>Refer & Earn</h3>
+            <p>Friends Referred: <span id="lblRefFriends">0</span></p>
+            <input type="text" id="txtReferLink" readonly>
+            <button onclick="shareReferral()">Share Link</button>
+        </div>
+    </div>
+
+    <!-- 3. LUDO LOBBY & GAME SECTION -->
+    <div id="secLudoLobby" class="card hidden">
+        <h2>Ludo 1v1 Match (vs Bot)</h2>
+        <p>Select Entry Fee (₹2 to ₹5000):</p>
+        <select id="ludoEntryFee">
+            <option value="2">₹2 (Win ₹4)</option>
+            <option value="10">₹10 (Win ₹18)</option>
+            <option value="50">₹50 (Win ₹95)</option>
+            <option value="100">₹100 (Win ₹190)</option>
+            <option value="500">₹500 (Win ₹950)</option>
+            <option value="1000">₹1000 (Win ₹1900)</option>
+            <option value="5000">₹5000 (Win ₹9500)</option>
+        </select>
+        <button class="btn-ludo" onclick="startLudoGame()" style="margin-top:15px;">Start Match</button>
+        <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:10px;">Back</button>
+    </div>
+
+    <div id="secLudoPlay" class="card hidden" style="text-align:center;">
+        <h2>Ludo 4 Goti Home Match</h2>
+        <div style="background:#fff; padding:10px; border-radius:8px; display:inline-block; margin:10px 0;">
+            <img src="https://i.ibb.co/30Z0v0C/ludo-board.png" style="width:240px; height:240px; object-fit:contain;" alt="Ludo Board">
+        </div>
+        <p id="lblLudoStatus" style="color:#00e676; font-size:15px;">Apni 4 goti ghar ke andar pahunchane ke liye Dice roll karein!</p>
+        <p id="lblGotiCount" style="color:#ffd700; font-size:14px; font-weight:bold;">Ghar pahunchi goti: 0 / 4</p>
+        <button class="btn-ludo" onclick="rollLudoDice()">Roll Dice & Move Goti</button>
+        <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:15px;">Quit / Back</button>
+    </div>
+
+    <!-- 4. ADMIN PANEL SECTION -->
+    <div id="secAdmin" class="card hidden">
+        <h2 style="color: #ff5722;">Admin Control Panel</h2>
+        <button class="btn-tab" onclick="showSec('secDashboard')">Exit Admin</button>
+        
+        <h4 style="margin-top:15px;">Search User</h4>
+        <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()">
+        <div id="adminUserList" style="max-height:150px; overflow-y:auto; background:#111; padding:8px; border-radius:6px; margin-top:5px;"></div>
+
+        <h4 style="margin-top:15px;">Add CPAgrip Mission</h4>
+        <input type="text" id="admMisTitle" placeholder="Mission Title">
+        <input type="text" id="admMisImg" placeholder="Image URL">
+        <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)">
+        <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)">
+        <button onclick="adminAddMission()">Publish Mission</button>
+
+        <h4 style="margin-top:20px;">Withdrawal Requests (Min ₹50)</h4>
+        <div id="adminWithdrawalsList">Loading requests...</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyB_eQoBcNtNBM3Hy_nIrzU2LHT0cDuJk",
+            authDomain: "apk-earner.firebaseapp.com",
+            databaseURL: "https://apk-earner-default-rtdb.firebaseio.com",
+            projectId: "apk-earner",
+            storageBucket: "apk-earner.firebasestorage.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUser = null;
+        let userData = { wallet: 0, banned: false, ludoPlayCount: 0, gotiHome: 0 };
+        let allUsersData = {};
+        let activeMissionLink = "";
+        let titleClickCount = 0;
+
+        function handleTitleTap() {
+            titleClickCount++;
+            if (titleClickCount >= 5) {
+                titleClickCount = 0;
+                let pass = prompt("Enter Admin Password:");
+                if (pass === "9522856794") {
+                    showSec('secAdmin');
+                    loadAdminData();
+                } else if(pass !== null) { alert("Wrong Password!"); }
+            }
         }
 
-        const data = {
-            source_url: sourceUrl,
-            download_link: downloadLink,
-            blogger_post_id: bloggerPostId
+        // Local Storage Session Management on Load
+        window.onload = function() {
+            let savedUid = localStorage.getItem('saved_uid');
+            if(savedUid) {
+                db.ref('users/' + savedUid).once('value', snapshot => {
+                    if(snapshot.exists()) {
+                        currentUser = { uid: savedUid };
+                        userData = snapshot.val();
+                        if(userData.banned) { alert("Account banned!"); logout(); return; }
+                        
+                        document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                        document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + savedUid;
+                        document.getElementById('secLogin').classList.add('hidden');
+                        document.getElementById('secDashboard').classList.remove('hidden');
+                        loadMissions();
+                        loadLeaderboard();
+                        checkWithdrawalTimer();
+
+                        db.ref('users/' + savedUid).on('value', snap => {
+                            if(snap.exists()) {
+                                userData = snap.val();
+                                document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                            }
+                        });
+                    } else {
+                        localStorage.removeItem('saved_uid');
+                    }
+                });
+            }
         };
 
-        try {
-            statusDiv.style.color = '#facc15';
-            statusDiv.innerText = "Saving to Firebase...";
-
-            const response = await fetch(`https://vibe-chat-ee27e-default-rtdb.firebaseio.com/games/${gameId}.json`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((result) => {
+                let user = result.user;
+                handleSuccessfulLogin(user);
+            }).catch((error) => {
+                alert("Google Login Error: " + error.message);
             });
-
-            if(response.ok) {
-                statusDiv.style.color = '#4ade80';
-                statusDiv.innerText = "Successfully Saved! 🎉";
-                document.getElementById('gameForm').reset();
-            } else {
-                throw new Error("Failed to save");
-            }
-        } catch (error) {
-            statusDiv.style.color = '#f87171';
-            statusDiv.innerText = "Error: " + error.message;
         }
-    }
-</script>
 
+        function emailLogin() {
+            let email = document.getElementById('txtEmail').value.trim();
+            let pass = document.getElementById('txtPass').value.trim();
+            if(!email || !pass) { alert("Email aur Password bharein!"); return; }
+
+            auth.signInWithEmailAndPassword(email, pass).then((userCredential) => {
+                handleSuccessfulLogin(userCredential.user);
+            }).catch(() => {
+                auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
+                    let user = userCredential.user;
+                    let initialData = { wallet: 50.00, banned: false, email: user.email, ludoPlayCount: 0, gotiHome: 0 };
+                    db.ref('users/' + user.uid).set(initialData).then(() => {
+                        handleSuccessfulLogin(user);
+                    });
+                }).catch(e => alert("Login Error: " + e.message));
+            });
+        }
+
+        function handleSuccessfulLogin(user) {
+            localStorage.setItem('saved_uid', user.uid);
+            currentUser = user;
+            db.ref('users/' + user.uid).once('value', snapshot => {
+                if(snapshot.exists()) {
+                    userData = snapshot.val();
+                    if(userData.banned) { alert("Your account is banned!"); logout(); return; }
+                } else {
+                    userData = { wallet: 50.00, banned: false, email: user.email || user.providerData[0].email, ludoPlayCount: 0, gotiHome: 0 };
+                    db.ref('users/' + user.uid).set(userData);
+                }
+                document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
+                document.getElementById('secLogin').classList.add('hidden');
+                document.getElementById('secDashboard').classList.remove('hidden');
+                loadMissions();
+                loadLeaderboard();
+                checkWithdrawalTimer();
+            });
+        }
+
+        function logout() { 
+            localStorage.removeItem('saved_uid');
+            auth.signOut().then(() => {
+                showSec('secLogin');
+                document.getElementById('secLogin').classList.remove('hidden');
+                document.getElementById('secDashboard').classList.add('hidden');
+            });
+        }
+
+        function updateWallet(amt) {
+            userData.wallet += amt;
+            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
+            db.ref('users/' + uid + '/wallet').set(userData.wallet);
+        }
+
+        function showSec(id) {
+            document.getElementById('secLogin').classList.add('hidden');
+            document.getElementById('secDashboard').classList.add('hidden');
+            document.getElementById('secSpin').classList.add('hidden');
+            document.getElementById('secMissionDetail').classList.add('hidden');
+            document.getElementById('secLudoLobby').classList.add('hidden');
+            document.getElementById('secLudoPlay').classList.add('hidden');
+            document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        function showTab(tabId) {
+            showSec('secDashboard');
+            switchTab(tabId);
+        }
+
+        // --- SPIN WHEEL LOGIC (Stops at ₹0.1 in exactly 3 seconds) ---
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const slices = ['₹0.1', '₹2.0', '₹0.5', '₹0.1', '₹1.0', '₹0.1'];
+        const sliceColors = ['#ffd700', '#ff5722', '#4caf50', '#03a9f4', '#e91e63', '#9c27b0'];
+        
+        function drawWheel(angle = 0) {
+            let numSlices = slices.length;
+            let arc = (2 * Math.PI) / numSlices;
+            ctx.clearRect(0, 0, 300, 300);
+            ctx.save();
+            ctx.translate(150, 150);
+            ctx.rotate(angle);
+            for (let i = 0; i < numSlices; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = sliceColors[i];
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, 140, i * arc, (i + 1) * arc);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+                ctx.save();
+                ctx.rotate(i * arc + arc / 2);
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 16px sans-serif";
+                ctx.fillText(slices[i], 70, 10);
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+        drawWheel();
+
+        function spinTheWheel() {
+            if (userData.wallet < 1.0) { alert("Balance kam hai! Minimum ₹1 chahiye."); return; }
+            updateWallet(-1.0);
+            
+            let targetDegree = 360 * 5 + 60; 
+            canvas.style.transform = `rotate(${targetDegree}deg)`;
+            
+            setTimeout(() => {
+                updateWallet(0.1);
+                alert("Spin Win: ₹0.10");
+            }, 3000);
+        }
+
+        // --- LUDO GAME LOGIC (4 Goti Home Match with Bot Win/Loss Sequence) ---
+        let currentEntry = 2;
+        function startLudoGame() {
+            currentEntry = parseFloat(document.getElementById('ludoEntryFee').value);
+            if (userData.wallet < currentEntry) { alert("Insufficient Balance!"); return; }
+            updateWallet(-currentEntry);
+            userData.gotiHome = 0;
+            document.getElementById('lblGotiCount').innerText = "Ghar pahunchi goti: 0 / 4";
+            showSec('secLudoPlay');
+        }
+
+        function rollLudoDice() {
+            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
+            let count = (userData.ludoPlayCount || 0) + 1;
+            db.ref('users/' + uid + '/ludoPlayCount').set(count);
+
+            let winCondition = (count % 2 === 0);
+            let uDice = winCondition ? 6 : 2;
+            let bDice = winCondition ? 3 : 5;
+
+            if (winCondition) {
+                if(userData.gotiHome < 4) userData.gotiHome++;
+                document.getElementById('lblGotiCount').innerText = `Ghar pahunchi goti: ${userData.gotiHome} / 4`;
+                
+                if(userData.gotiHome === 4) {
+                    let winAmt = currentEntry * 1.9;
+                    updateWallet(winAmt);
+                    alert(`Badhai ho! Aapne apni chaaron goti ghar mein ghusa li aur ₹${winAmt} jeet liye!`);
+                    showSec('secDashboard');
+                } else {
+                    document.getElementById('lblLudoStatus').innerText = `Sahi chaal! Dice: ${uDice} vs Bot: ${bDice}. Goti aage badhi!`;
+                }
+            } else {
+                document.getElementById('lblLudoStatus').innerText = `Bot ne goti kaat di! Dice: ${uDice} vs Bot: ${bDice}. Phir se koshish karein!`;
+            }
+        }
+
+        // --- MISSIONS & CHROME REDIRECT ---
+        function loadMissions() {
+            db.ref('missions').on('value', snapshot => {
+                let list = document.getElementById('missionsList');
+                list.innerHTML = "";
+                if (!snapshot.exists()) { list.innerHTML = "<p>No missions available.</p>"; return; }
+                snapshot.forEach(child => {
+                    let m = child.val();
+                    let mId = child.key;
+                    if(userData.completed && userData.completed[mId]) return;
+                    list.innerHTML += `
+                        <div class="mission-card">
+                            <img src="${m.image}" class="mission-img">
+                            <h4>${m.title}</h4>
+                            <p style="color:#00e676;">Win Prize: ₹${m.prize}</p>
+                            <button onclick="openMissionDetail('${m.title}', '${m.image}', '${m.link}', '${mId}', ${m.prize})">View Details</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function openMissionDetail(title, img, link, mId, prize) {
+            document.getElementById('detTitle').innerText = title;
+            document.getElementById('detImg').src = img;
+            activeMissionLink = link;
+            window.currentMissionId = mId;
+            window.currentMissionPrize = prize;
+            showSec('secMissionDetail');
+        }
+
+        function startMissionLink() {
+            window.open(activeMissionLink, '_blank');
+            setTimeout(() => {
+                let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
+                if(confirm("Mission complete ho gaya? OK dabayein reward claim karne ke liye.")) {
+                    if(!userData.completed) userData.completed = {};
+                    userData.completed[window.currentMissionId] = true;
+                    db.ref('users/' + uid + '/completed').set(userData.completed);
+                    updateWallet(window.currentMissionPrize);
+                    alert("Reward Added: ₹" + window.currentMissionPrize);
+                    showTab('tabMissions');
+                }
+            }, 3000);
+        }
+
+        // --- LEADERBOARD ---
+        function loadLeaderboard() {
+            db.ref('users').orderByChild('wallet').limitToLast(10).on('value', snapshot => {
+                let div = document.getElementById('leaderboardList');
+                div.innerHTML = "";
+                let list = [];
+                snapshot.forEach(c => list.push(c.val()));
+                list.reverse().forEach((u, i) => {
+                    div.innerHTML += `<p>${i + 1}. ${u.email || 'User'} - <span style="color:#00e676;">₹${(u.wallet||0).toFixed(2)}</span></p>`;
+                });
+            });
+        }
+
+        // --- WITHDRAWAL (Min ₹50) ---
+        function requestWithdrawal() {
+            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
+            let upi = document.getElementById('txtUpi').value.trim();
+            let amt = parseFloat(document.getElementById('txtAmt').value);
+            if (!upi || isNaN(amt)) { alert("Enter valid UPI ID and Amount."); return; }
+            if (amt < 50) { alert("Minimum withdrawal amount is ₹50!"); return; }
+            if (amt > userData.wallet) { alert("Insufficient Balance!"); return; }
+
+            updateWallet(-amt);
+            db.ref('withdrawals').push({ uid: uid, email: userData.email, upi: upi, amount: amt, time: Date.now() });
+            localStorage.setItem('lock_' + uid, Date.now() + 86400000);
+            checkWithdrawalTimer();
+            alert("Withdrawal Requested Successfully!");
+        }
+
+        function checkWithdrawalTimer() {
+            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
+            let lock = localStorage.getItem('lock_' + uid);
+            let lbl = document.getElementById('lblWithdrawStatus');
+            if (lock && Date.now() < lock) {
+                let rem = lock - Date.now();
+                let hrs = Math.floor(rem / 3600000);
+                lbl.innerText = `Wait 24 hours: ${hrs} hours remaining`;
+            } else { lbl.innerText = ""; }
+        }
+
+        // --- ADMIN PANEL FUNCTIONS ---
+        function loadAdminData() {
+            db.ref('users').on('value', snapshot => {
+                allUsersData = snapshot.val() || {};
+                renderUserList(allUsersData);
+            });
+            db.ref('withdrawals').on('value', snapshot => {
+                let list = document.getElementById('adminWithdrawalsList');
+                list.innerHTML = "";
+                if (!snapshot.exists()) { list.innerHTML = "<p>No withdrawal requests.</p>"; return; }
+                snapshot.forEach(child => {
+                    let w = child.val();
+                    let id = child.key;
+                    list.innerHTML += `
+                        <div style="background:#222; padding:8px; margin-top:5px; border-radius:5px;">
+                            <p>${w.email} | UPI: ${w.upi} | ₹${w.amount}</p>
+                            <button style="background:#00e676; padding:6px;" onclick="approveWithdrawal('${id}')">Approve & Pay</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function renderUserList(users) {
+            let div = document.getElementById('adminUserList');
+            div.innerHTML = "";
+            for (let uid in users) {
+                let u = users[uid];
+                div.innerHTML += `
+                    <div style="border-bottom:1px solid #444; padding:5px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>${u.email} (₹${u.wallet || 0})</span>
+                        <div>
+                            <button style="padding:4px; font-size:12px;" onclick="adminEditCoin('${uid}')">Coin</button>
+                            <button style="padding:4px; font-size:12px; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function filterUsers() {
+            let query = document.getElementById('adminSearch').value.toLowerCase();
+            let filtered = {};
+            for (let uid in allUsersData) {
+                if (allUsersData[uid].email && allUsersData[uid].email.toLowerCase().includes(query)) {
+                    filtered[uid] = allUsersData[uid];
+                }
+            }
+            renderUserList(filtered);
+        }
+
+        function adminEditCoin(uid) {
+            let newBal = prompt("Enter new wallet balance:");
+            if (newBal !== null && !isNaN(newBal)) {
+                db.ref('users/' + uid + '/wallet').set(parseFloat(newBal));
+                alert("Balance updated!");
+            }
+        }
+
+        function adminToggleBan(uid, currentStatus) {
+            db.ref('users/' + uid + '/banned').set(!currentStatus);
+            alert("User status updated!");
+        }
+
+        function adminAddMission() {
+            let title = document.getElementById('admMisTitle').value;
+            let image = document.getElementById('admMisImg').value;
+            let link = document.getElementById('admMisLink').value;
+            let prize = parseFloat(document.getElementById('admMisPrize').value);
+            if (title && image && link && !isNaN(prize)) {
+                db.ref('missions').push({ title, image, link, prize });
+                alert("Mission added successfully!");
+            } else { alert("Sabhi fields bharein!"); }
+        }
+
+        function approveWithdrawal(id) {
+            db.ref('withdrawals/' + id).remove().then(() => alert("Withdrawal approved and cleared!"));
+        }
+
+        function shareReferral() {
+            if (navigator.share) { navigator.share({ title: 'APK Earning', url: document.getElementById('txtReferLink').value }); }
+            else { alert("Referral link copied!"); }
+        }
+    </script>
 </body>
 </html>
