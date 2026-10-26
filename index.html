@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body { 
-            background: linear-gradient(135deg, rgba(11,15,11,0.9), rgba(20,26,20,0.9)), url('https://archive.org/download/image_e899acdc2_202610/image_e899acdc~2.jpg'); 
+            background: url('https://archive.org/download/image_e899acdc2_202610/image_e899acdc~2.jpg'); 
             background-size: cover; 
             background-position: center; 
             background-attachment: fixed;
@@ -20,7 +20,7 @@
             overflow-x: hidden; 
         }
 
-        .card { background: rgba(20, 30, 20, 0.95); border: 2px solid #ffd700; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); box-sizing: border-box; }
+        .card { background: rgba(15, 25, 15, 0.9); border: 2px solid #ffd700; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); box-sizing: border-box; backdrop-filter: blur(2px); }
         input, button, select { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
         input, select { background: #121a12; color: #fff; }
         button { background: linear-gradient(45deg, #00c853, #00e676); color: #000; font-weight: bold; cursor: pointer; border: none; }
@@ -33,9 +33,7 @@
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
         #secWithdrawal {
-            background: linear-gradient(135deg, rgba(11,15,11,0.92), rgba(20,26,20,0.92)), url('https://archive.org/download/img-7d-9c-1a-38-8801-44ae-9255-a-8e-14c-7a-115a/IMG_7d9c1a38-8801-44ae-9255-a8e14c7a115a.jpg');
-            background-size: cover;
-            background-position: center;
+            background: rgba(15, 25, 15, 0.95);
         }
         .withdraw-option-btn {
             background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center;
@@ -96,7 +94,7 @@
 
         <!-- DASHBOARD SECTION -->
         <div id="secDashboard" class="card hidden">
-            <!-- Profile Area with Clickable Profile for Support/Logout Options -->
+            <!-- Profile Area -->
             <div id="userProfileArea" style="background: rgba(0,230,118,0.1); padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #00e676; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleProfileMenu()">
                 <div>
                     <small style="color:#aaa; font-size:10px;">Logged in as (Click for Options):</small>
@@ -105,7 +103,7 @@
                 <span style="font-size: 16px;">👤▼</span>
             </div>
 
-            <!-- Hidden Profile Menu (Support & Logout) -->
+            <!-- Profile Menu (Support & Logout) -->
             <div id="profileMenu" class="hidden" style="background: #112211; border: 1px solid #ffd700; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
                 <button class="btn-tg" style="margin-top:0; padding:8px; font-size:12px;" onclick="window.open('https://t.me/apkearner', '_blank')">Support / Telegram 📢</button>
                 <button class="btn-tab" style="background:#d32f2f; color:#fff; border:none; margin-top:6px; padding:8px; font-size:12px;" onclick="logout()">Logout</button>
@@ -226,7 +224,7 @@
             <div id="adminUserSection" class="hidden" style="background:#111; padding:10px; border-radius:8px; margin-top:8px; border:1px solid #ffd700;">
                 <h4 style="margin:0 0 8px 0; font-size:13px; color:#ffd700;">All Logged Users & Coin Management</h4>
                 <input type="text" id="adminSearch" placeholder="Search by name or email..." onkeyup="filterUsers()" style="padding:8px; margin-bottom:8px;">
-                <div id="adminUserList" style="max-height:160px; overflow-y:auto; background:#0a0e0a; padding:6px; border-radius:6px;"></div>
+                <div id="adminUserList" style="max-height:160px; overflow-y:auto; background:#0a0e0a; padding:6px; border-radius:6px;">Loading users...</div>
             </div>
 
             <h4 style="margin-top:15px; font-size:14px;">Set Watch Ad Link</h4>
@@ -315,6 +313,11 @@
                         logout();
                         return;
                     }
+                    // Update name/email if missing
+                    db.ref('users/' + user.uid).update({
+                        email: user.email,
+                        name: user.displayName || userData.name || user.email.split('@')[0]
+                    });
                 } else {
                     userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0] };
                     db.ref('users/' + user.uid).set(userData);
@@ -347,6 +350,9 @@
         function toggleUserListSection() {
             let sec = document.getElementById('adminUserSection');
             sec.classList.toggle('hidden');
+            if(!sec.classList.contains('hidden')) {
+                loadAdminData();
+            }
         }
 
         function logout() {
@@ -654,9 +660,11 @@
             let div = document.getElementById('adminUserList');
             if(!div) return;
             div.innerHTML = "";
+            let count = 0;
             for (let uid in users) {
                 let u = users[uid];
                 let displayName = u.name || u.email || 'User';
+                count++;
                 div.innerHTML += `
                     <div style="border-bottom:1px solid #333; padding:6px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
@@ -670,6 +678,9 @@
                         </div>
                     </div>
                 `;
+            }
+            if (count === 0) {
+                div.innerHTML = "<p style='color:#aaa; font-size:12px; text-align:center;'>No users found in database.</p>";
             }
         }
 
