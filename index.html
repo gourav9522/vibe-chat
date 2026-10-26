@@ -29,7 +29,7 @@
         .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
         .btn-ad { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
         .btn-tab { background: #1a261a; color: #ffd700; border: 1px solid #ffd700; margin: 3px 0; padding: 10px; font-size: 13px; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
         #secWithdrawal { background: rgba(15, 25, 15, 0.95); }
@@ -69,7 +69,7 @@
         .mission-card { background: rgba(24, 36, 24, 0.95); border: 1px solid #00e676; padding: 10px; border-radius: 8px; margin-top: 8px; }
         .mission-img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
 
-        /* Full Screen Mission Popup */
+        /* Full Screen Mission Popup Modal Fix */
         #missionModal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -270,7 +270,7 @@
 
     </div>
 
-    <!-- FULL SCREEN MISSION POPUP MODAL -->
+    <!-- FULL SCREEN MISSION POPUP MODAL (DEFAULT HIDDEN FIXED) -->
     <div id="missionModal" class="hidden">
         <div class="card" style="width:100%; max-width:400px; max-height:90vh; overflow-y:auto; position:relative;">
             <span style="position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; color:#ffd700;" onclick="closeMissionModal()">&times;</span>
@@ -562,7 +562,7 @@
         }
 
         function checkWithdrawalTimer() {
-            let lock = localStorage.getItem('lock_' + currentUser ? currentUser.uid : 'guest');
+            let lock = localStorage.getItem('lock_' + (currentUser ? currentUser.uid : 'guest'));
             let lbl = document.getElementById('lblWithdrawTimer');
             if (!lbl) return;
             if (lock && Date.now() < lock) {
@@ -612,7 +612,6 @@
                     let m = child.val();
                     let mId = child.key;
                     
-                    // Check expiration based on days
                     let createdAt = m.createdAt || now;
                     let expiryDays = m.days || 7;
                     let expiryTime = createdAt + (expiryDays * 24 * 60 * 60 * 1000);
@@ -625,17 +624,21 @@
                     let isCompleted = currentUser && userData.completedMissions && userData.completedMissions[mId];
                     let isPending = currentUser && userData.pendingMissions && userData.pendingMissions[mId];
 
-                    if (isCompleted) return; // Hide completed/expired missions to save storage
+                    if (isCompleted) return;
 
                     let btnText = isPending ? "Pending ⏳" : "Start Mission";
                     let btnStyle = isPending ? "background:#ff9800; color:#000;" : "";
+                    let safeTitle = encodeURIComponent(m.title || "Mission");
+                    let safeImg = encodeURIComponent(m.image || "");
+                    let safeLink = encodeURIComponent(m.link || "");
+                    let safeDesc = encodeURIComponent(m.desc || "Complete the task to earn reward.");
 
                     list.innerHTML += `
                         <div class="mission-card">
-                            <img src="${m.image}" class="mission-img">
-                            <h4 style="margin:5px 0; color:#ffd700;">${m.title}</h4>
-                            <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize} | Validity: ${expiryDays} Days</p>
-                            <button style="padding:8px; font-size:13px; ${btnStyle}" onclick="openMissionModal('${mId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.image)}', '${encodeURIComponent(m.link)}', '${encodeURIComponent(m.desc || "Complete the task to earn reward.")}', ${m.prize}, ${expiryDays})">${btnText}</button>
+                            <img src="${m.image || ''}" class="mission-img">
+                            <h4 style="margin:5px 0; color:#ffd700;">${m.title || ''}</h4>
+                            <p style="color:#00e676; margin:4px 0;">Win Prize: ₹${m.prize || 0} | Validity: ${expiryDays} Days</p>
+                            <button style="padding:8px; font-size:13px; ${btnStyle}" onclick="openMissionModal('${mId}', '${safeTitle}', '${safeImg}', '${safeLink}', '${safeDesc}', ${m.prize || 0}, ${expiryDays})">${btnText}</button>
                         </div>
                     `;
                 });
@@ -677,7 +680,6 @@
         function startMissionFromModal() {
             if (!currentUser || !activeMissionId) return;
 
-            // Mark as pending in Firebase
             db.ref('users/' + currentUser.uid + '/pendingMissions/' + activeMissionId).set(true);
             
             window.open(activeMissionLink, '_blank');
@@ -873,13 +875,11 @@
         }
 
         function approveWithdrawal(id, uid, amount, upi) {
-            // Save to user's local storage history
             let historyKey = 'withdrawal_history_' + uid;
             let existingHistory = JSON.parse(localStorage.getItem(historyKey) || '[]');
             existingHistory.push({ amount, upi, time: Date.now() });
             localStorage.setItem(historyKey, JSON.stringify(existingHistory));
 
-            // Remove from global Firebase withdrawals to save storage
             db.ref('withdrawals/' + id).remove().then(() => {
                 alert("Withdrawal approved, saved to local history, and removed from server!");
                 loadAdminData();
