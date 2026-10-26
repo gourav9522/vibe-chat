@@ -14,7 +14,7 @@
         input, button, select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
         input, select { background: #121212; color: #fff; }
         button { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; font-weight: bold; cursor: pointer; }
-        .btn-google { background: #db4437; color: #fff; border: none; }
+        .btn-google { background: #db4437; color: #fff; border: none; padding: 15px; font-size: 16px; border-radius: 8px; }
         .btn-spin { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
         .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
         .btn-tab { background: #222; color: #ffd700; border: 1px solid #ffd700; margin: 4px 0; }
@@ -33,15 +33,11 @@
 <body>
     <div class="coin-bg"></div>
 
-    <!-- 1. LOGIN SECTION -->
-    <div id="secLogin" class="card" style="text-align:center; margin-top: 60px;">
+    <!-- 1. LOGIN SECTION (ONLY GOOGLE) -->
+    <div id="secLogin" class="card" style="text-align:center; margin-top: 80px;">
         <h2 style="color: #ffd700;" onclick="handleTitleTap()">APK Earning App</h2>
-        <p style="color:#aaa;">Golden Earning Platform</p>
+        <p style="color:#aaa; margin-bottom: 25px;">Golden Earning Platform</p>
         <button class="btn-google" onclick="googleLogin()">Login with Google (Gmail)</button>
-        <div style="margin:15px 0; color:#888;">OR</div>
-        <input type="email" id="txtEmail" placeholder="Enter Email">
-        <input type="password" id="txtPass" placeholder="Enter Password">
-        <button onclick="emailLogin()" style="margin-top:10px;">Login / Register with Email</button>
     </div>
 
     <!-- 2. DASHBOARD SECTION -->
@@ -196,92 +192,108 @@
             }
         }
 
-        // Local Storage Session Management on Load
+        // --- ENHANCED LOCALSTORAGE & GOOGLE LOGIN PERSISTENCE ---
         window.onload = function() {
+            // Check Firebase Redirect Result first
+            auth.getRedirectResult().then((result) => {
+                if (result.user) {
+                    processLoginSuccess(result.user);
+                } else {
+                    checkLocalSession();
+                }
+            }).catch((error) => {
+                console.error(error);
+                checkLocalSession();
+            });
+        };
+
+        function checkLocalSession() {
             let savedUid = localStorage.getItem('saved_uid');
-            if(savedUid) {
+            if (savedUid) {
                 db.ref('users/' + savedUid).once('value', snapshot => {
-                    if(snapshot.exists()) {
+                    if (snapshot.exists()) {
                         currentUser = { uid: savedUid };
                         userData = snapshot.val();
-                        if(userData.banned) { alert("Account banned!"); logout(); return; }
-                        
-                        document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-                        document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + savedUid;
-                        document.getElementById('secLogin').classList.add('hidden');
-                        document.getElementById('secDashboard').classList.remove('hidden');
-                        loadMissions();
-                        loadLeaderboard();
-                        checkWithdrawalTimer();
-
-                        db.ref('users/' + savedUid).on('value', snap => {
-                            if(snap.exists()) {
-                                userData = snap.val();
-                                document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-                            }
-                        });
+                        if (userData.banned) {
+                            alert("Your account has been banned!");
+                            logout();
+                            return;
+                        }
+                        initDashboard(savedUid);
                     } else {
                         localStorage.removeItem('saved_uid');
+                        showLoginScreen();
                     }
                 });
+            } else {
+                showLoginScreen();
             }
-        };
+        }
 
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then((result) => {
-                let user = result.user;
-                handleSuccessfulLogin(user);
+                processLoginSuccess(result.user);
             }).catch((error) => {
-                alert("Google Login Error: " + error.message);
+                // Fallback to redirect if popup fails on mobile webview
+                auth.signInWithRedirect(provider).catch(err => {
+                    alert("Google Login Error: " + err.message);
+                });
             });
         }
 
-        function emailLogin() {
-            let email = document.getElementById('txtEmail').value.trim();
-            let pass = document.getElementById('txtPass').value.trim();
-            if(!email || !pass) { alert("Email aur Password bharein!"); return; }
-
-            auth.signInWithEmailAndPassword(email, pass).then((userCredential) => {
-                handleSuccessfulLogin(userCredential.user);
-            }).catch(() => {
-                auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
-                    let user = userCredential.user;
-                    let initialData = { wallet: 50.00, banned: false, email: user.email, ludoPlayCount: 0, gotiHome: 0 };
-                    db.ref('users/' + user.uid).set(initialData).then(() => {
-                        handleSuccessfulLogin(user);
-                    });
-                }).catch(e => alert("Login Error: " + e.message));
-            });
-        }
-
-        function handleSuccessfulLogin(user) {
+        function processLoginSuccess(user) {
             localStorage.setItem('saved_uid', user.uid);
             currentUser = user;
             db.ref('users/' + user.uid).once('value', snapshot => {
-                if(snapshot.exists()) {
+                if (snapshot.exists()) {
                     userData = snapshot.val();
-                    if(userData.banned) { alert("Your account is banned!"); logout(); return; }
+                    if (userData.banned) {
+                        alert("Your account is banned!");
+                        logout();
+                        return;
+                    }
                 } else {
-                    userData = { wallet: 50.00, banned: false, email: user.email || user.providerData[0].email, ludoPlayCount: 0, gotiHome: 0 };
+                    userData = { 
+                        wallet: 50.00, 
+                        banned: false, 
+                        email: user.email || user.providerData[0].email, 
+                        ludoPlayCount: 0, 
+                        gotiHome: 0 
+                    };
                     db.ref('users/' + user.uid).set(userData);
                 }
-                document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-                document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
-                document.getElementById('secLogin').classList.add('hidden');
-                document.getElementById('secDashboard').classList.remove('hidden');
-                loadMissions();
-                loadLeaderboard();
-                checkWithdrawalTimer();
+                initDashboard(user.uid);
             });
+        }
+
+        function initDashboard(uid) {
+            document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+            document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + uid;
+            document.getElementById('secLogin').classList.add('hidden');
+            document.getElementById('secDashboard').classList.remove('hidden');
+            loadMissions();
+            loadLeaderboard();
+            checkWithdrawalTimer();
+
+            // Realtime wallet sync
+            db.ref('users/' + uid).on('value', snap => {
+                if (snap.exists()) {
+                    userData = snap.val();
+                    document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                }
+            });
+        }
+
+        function showLoginScreen() {
+            document.getElementById('secLogin').classList.remove('hidden');
+            document.getElementById('secDashboard').classList.add('hidden');
         }
 
         function logout() { 
             localStorage.removeItem('saved_uid');
             auth.signOut().then(() => {
-                showSec('secLogin');
-                document.getElementById('secLogin').classList.remove('hidden');
-                document.getElementById('secDashboard').classList.add('hidden');
+                showLoginScreen();
             });
         }
 
@@ -312,7 +324,7 @@
             switchTab(tabId);
         }
 
-        // --- SPIN WHEEL LOGIC (Stops at ₹0.1 in exactly 3 seconds) ---
+        // --- SPIN WHEEL LOGIC (Needle stops at ₹0.1 in exactly 3 seconds) ---
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
         const slices = ['₹0.1', '₹2.0', '₹0.5', '₹0.1', '₹1.0', '₹0.1'];
