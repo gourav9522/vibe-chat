@@ -23,7 +23,6 @@ jobs:
         mkdir -p android-app/app/src/main/assets
         mkdir -p android-app/app/src/main/java/com/apk/earning
         mkdir -p android-app/app/src/main/res/mipmap
-        mkdir -p android-app/gradle/wrapper
 
         cp index.html android-app/app/src/main/assets/
 
@@ -118,23 +117,15 @@ jobs:
         dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' }
         EOF
 
-        cat << 'EOF' > android-app/gradle/wrapper/gradle-wrapper.properties
-        distributionBase=GRADLE_USER_HOME
-        distributionPath=wrapper/dists
-        distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
-        zipStoreBase=GRADLE_USER_HOME
-        zipStorePath=wrapper/dists
-        EOF
-
-    - name: Build APK with Gradle
+    - name: Build APK with Direct Gradle 8.4
       run: |
         cd android-app
         cat << 'EOT' > local.properties
         sdk.dir=/usr/local/lib/android/sdk
         EOT
-        gradle wrapper --gradle-version 8.4
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        wget -q https://services.gradle.org/distributions/gradle-8.4-bin.zip
+        unzip -q gradle-8.4-bin.zip
+        gradle-8.4/bin/gradle assembleDebug
 
     - name: Upload Generated APK
       uses: actions/upload-artifact@v4
