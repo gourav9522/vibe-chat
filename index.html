@@ -14,12 +14,12 @@
         input, button, select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
         input, select { background: #121212; color: #fff; }
         button { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; font-weight: bold; cursor: pointer; }
-        .btn-google { background: #db4437; color: #fff; border: none; padding: 15px; font-size: 16px; border-radius: 8px; }
+        .btn-google { background: #db4437; color: #fff; border: none; padding: 12px; font-size: 15px; border-radius: 8px; }
         .btn-spin { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
         .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
         .btn-tab { background: #222; color: #ffd700; border: 1px solid #ffd700; margin: 4px 0; }
         .hidden { display: none; }
-        .wallet { font-size: 28px; font-weight: bold; color: #00e676; }
+        .wallet { font-size: 26px; font-weight: bold; color: #00e676; }
         
         /* Spin Wheel with Needle */
         .wheel-container { position: relative; width: 260px; height: 260px; margin: 20px auto; }
@@ -33,33 +33,33 @@
 <body>
     <div class="coin-bg"></div>
 
-    <!-- MAIN APP CONTAINER -->
     <div id="appContainer" style="max-width: 500px; margin: auto;">
         
-        <!-- TITLE / HEADER WITH 5-TAP ADMIN TRIGGER -->
+        <!-- HEADER TITLE WITH 5-TAP ADMIN TRIGGER -->
         <div class="card" style="text-align:center; padding: 10px;">
             <h2 style="color: #ffd700; margin: 5px 0; cursor:pointer;" onclick="handleTitleTap()">APK Earning App</h2>
             <small style="color:#aaa;">Golden Earning Platform</small>
         </div>
 
-        <!-- 1. LOGIN SECTION (Inside App Dashboard view when logged out) -->
-        <div id="secLogin" class="card" style="text-align:center;">
-            <h3>Welcome! Please Login</h3>
-            <p style="color:#aaa; font-size: 14px;">Earn money by playing Ludo, Spin & Missions.</p>
-            <button class="btn-google" onclick="googleLogin()">Login with Google (Gmail)</button>
-        </div>
-
-        <!-- 2. DASHBOARD SECTION (Shown when logged in) -->
-        <div id="secDashboard" class="card hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <small style="color:#aaa;">Wallet Balance</small>
+        <!-- MAIN DASHBOARD (Always Visible to Everyone) -->
+        <div id="secDashboard" class="card">
+            
+            <!-- LOGIN / WALLET STATUS BAR -->
+            <div id="authStatusBar" style="background: rgba(255,215,0,0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div id="loginPromptArea">
+                    <span style="font-size: 14px; color: #ff9800;">Not Logged In</span>
+                </div>
+                <div id="userWalletArea" class="hidden">
+                    <small style="color:#aaa;">Wallet</small>
                     <div class="wallet" id="lblWallet">₹0.00</div>
                 </div>
-                <button class="btn-tab" style="padding:6px 12px; font-size:12px; width:auto; background:#d32f2f; color:#fff;" onclick="logout()">Logout</button>
+                <div>
+                    <button id="authBtn" class="btn-google" style="margin:0; padding: 8px 14px; font-size: 13px;" onclick="googleLogin()">Login with Google</button>
+                    <button id="logoutBtn" class="btn-tab hidden" style="margin:0; padding: 6px 10px; font-size: 12px; background:#d32f2f; color:#fff;" onclick="logout()">Logout</button>
+                </div>
             </div>
 
-            <div style="display:flex; gap:4px; margin-top:15px;">
+            <div style="display:flex; gap:4px; margin-top:10px;">
                 <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
                 <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
                 <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
@@ -121,7 +121,7 @@
             </div>
         </div>
 
-        <!-- 3. LUDO LOBBY & GAME SECTION -->
+        <!-- LUDO LOBBY & GAME SECTION -->
         <div id="secLudoLobby" class="card hidden">
             <h2>Ludo 1v1 Match (vs Bot)</h2>
             <p>Select Entry Fee (₹2 to ₹5000):</p>
@@ -149,7 +149,7 @@
             <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:15px;">Quit / Back</button>
         </div>
 
-        <!-- 4. ADMIN PANEL SECTION -->
+        <!-- ADMIN PANEL SECTION -->
         <div id="secAdmin" class="card hidden">
             <h2 style="color: #ff5722;">Admin Control Panel</h2>
             <button class="btn-tab" onclick="showSec('secDashboard')">Exit Admin</button>
@@ -201,7 +201,7 @@
             }
         }
 
-        // --- LOCALSTORAGE & GOOGLE LOGIN PERSISTENCE ---
+        // Check Local Storage session on startup
         window.onload = function() {
             let savedUid = localStorage.getItem('saved_uid');
             if (savedUid) {
@@ -214,15 +214,14 @@
                             logout();
                             return;
                         }
-                        initDashboard(savedUid);
+                        updateUIAfterLogin(savedUid);
                     } else {
                         localStorage.removeItem('saved_uid');
-                        showLoginScreen();
                     }
                 });
-            } else {
-                showLoginScreen();
             }
+            loadMissions();
+            loadLeaderboard();
         };
 
         function googleLogin() {
@@ -230,7 +229,9 @@
             auth.signInWithPopup(provider).then((result) => {
                 processLoginSuccess(result.user);
             }).catch((error) => {
-                alert("Google Login Error: " + error.message);
+                auth.signInWithRedirect(provider).catch(err => {
+                    alert("Google Login Error: " + err.message);
+                });
             });
         }
 
@@ -255,17 +256,18 @@
                     };
                     db.ref('users/' + user.uid).set(userData);
                 }
-                initDashboard(user.uid);
+                updateUIAfterLogin(user.uid);
             });
         }
 
-        function initDashboard(uid) {
+        function updateUIAfterLogin(uid) {
+            document.getElementById('loginPromptArea').classList.add('hidden');
+            document.getElementById('userWalletArea').classList.remove('hidden');
+            document.getElementById('authBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            
             document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
             document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + uid;
-            document.getElementById('secLogin').classList.add('hidden');
-            document.getElementById('secDashboard').classList.remove('hidden');
-            loadMissions();
-            loadLeaderboard();
             checkWithdrawalTimer();
 
             // Realtime wallet sync
@@ -277,16 +279,29 @@
             });
         }
 
-        function showLoginScreen() {
-            document.getElementById('secLogin').classList.remove('hidden');
-            document.getElementById('secDashboard').classList.add('hidden');
-        }
-
         function logout() { 
             localStorage.removeItem('saved_uid');
+            currentUser = null;
+            userData = { wallet: 0, banned: false, ludoPlayCount: 0, gotiHome: 0 };
             auth.signOut().then(() => {
-                showLoginScreen();
+                document.getElementById('loginPromptArea').classList.remove('hidden');
+                document.getElementById('userWalletArea').classList.add('hidden');
+                document.getElementById('authBtn').classList.remove('hidden');
+                document.getElementById('logoutBtn').classList.add('hidden');
+                document.getElementById('lblWallet').innerText = "₹0.00";
+                showSec('secDashboard');
+                switchTab('tabHome');
             });
+        }
+
+        function checkLoginBeforeAction() {
+            let savedUid = localStorage.getItem('saved_uid');
+            if (!savedUid && !currentUser) {
+                alert("Pehle Google Login karein!");
+                googleLogin();
+                return false;
+            }
+            return true;
         }
 
         function updateWallet(amt) {
@@ -296,7 +311,6 @@
         }
 
         function showSec(id) {
-            document.getElementById('secLogin').classList.add('hidden');
             document.getElementById('secDashboard').classList.add('hidden');
             document.getElementById('secSpin').classList.add('hidden');
             document.getElementById('secMissionDetail').classList.add('hidden');
@@ -316,7 +330,7 @@
             switchTab(tabId);
         }
 
-        // --- SPIN WHEEL LOGIC (Stops at ₹0.1 in exactly 3 seconds) ---
+        // --- SPIN WHEEL LOGIC ---
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
         const slices = ['₹0.1', '₹2.0', '₹0.5', '₹0.1', '₹1.0', '₹0.1'];
@@ -348,6 +362,7 @@
         drawWheel();
 
         function spinTheWheel() {
+            if (!checkLoginBeforeAction()) return;
             if (userData.wallet < 1.0) { alert("Balance kam hai! Minimum ₹1 chahiye."); return; }
             updateWallet(-1.0);
             
@@ -360,9 +375,10 @@
             }, 3000);
         }
 
-        // --- LUDO GAME LOGIC (4 Goti Home Match with Bot Win/Loss Sequence) ---
+        // --- LUDO GAME LOGIC ---
         let currentEntry = 2;
         function startLudoGame() {
+            if (!checkLoginBeforeAction()) return;
             currentEntry = parseFloat(document.getElementById('ludoEntryFee').value);
             if (userData.wallet < currentEntry) { alert("Insufficient Balance!"); return; }
             updateWallet(-currentEntry);
@@ -397,7 +413,7 @@
             }
         }
 
-        // --- MISSIONS & CHROME REDIRECT ---
+        // --- MISSIONS ---
         function loadMissions() {
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('missionsList');
@@ -420,6 +436,7 @@
         }
 
         function openMissionDetail(title, img, link, mId, prize) {
+            if (!checkLoginBeforeAction()) return;
             document.getElementById('detTitle').innerText = title;
             document.getElementById('detImg').src = img;
             activeMissionLink = link;
@@ -456,8 +473,9 @@
             });
         }
 
-        // --- WITHDRAWAL (Min ₹50) ---
+        // --- WITHDRAWAL ---
         function requestWithdrawal() {
+            if (!checkLoginBeforeAction()) return;
             let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
             let upi = document.getElementById('txtUpi').value.trim();
             let amt = parseFloat(document.getElementById('txtAmt').value);
