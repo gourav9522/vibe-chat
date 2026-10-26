@@ -32,7 +32,6 @@
         .hidden { display: none; }
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
-        /* Withdrawal Section Custom Background & Buttons */
         #secWithdrawal {
             background: linear-gradient(135deg, rgba(11,15,11,0.92), rgba(20,26,20,0.92)), url('https://archive.org/download/img-7d-9c-1a-38-8801-44ae-9255-a-8e-14c-7a-115a/IMG_7d9c1a38-8801-44ae-9255-a8e14c7a115a.jpg');
             background-size: cover;
@@ -56,7 +55,6 @@
             gap: 8px;
         }
 
-        /* Real Ludo Board Styling */
         .ludo-container { position: relative; width: 300px; height: 300px; margin: 15px auto; background: url('https://archive.org/download/img-271d-1920-e-805-4f-2a-a-40e-48b-152166e-11/IMG_271d1920-e805-4f2a-a40e-48b152166e11.jpg') no-repeat center center; background-size: cover; border: 4px solid #333; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
         .token { position: absolute; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
         .token-user { background: #2196f3; color: #fff; }
@@ -223,15 +221,19 @@
             <h2 style="color: #ff5722; font-size:18px;">Admin Control Panel</h2>
             <button class="btn-tab" onclick="showGameSec('secDashboard')">Exit Admin</button>
             
-            <h4 style="margin-top:12px; font-size:14px;">Manage Users & Coins</h4>
-            <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()" style="padding:8px;">
-            <div id="adminUserList" style="max-height:130px; overflow-y:auto; background:#111; padding:6px; border-radius:6px; margin-top:4px;"></div>
+            <!-- Show/Hide Button & Section for All Logged Users -->
+            <button class="btn-gold" style="margin-top:12px;" onclick="toggleUserListSection()">👥 Show/Hide All Logged Users</button>
+            <div id="adminUserSection" class="hidden" style="background:#111; padding:10px; border-radius:8px; margin-top:8px; border:1px solid #ffd700;">
+                <h4 style="margin:0 0 8px 0; font-size:13px; color:#ffd700;">All Logged Users & Coin Management</h4>
+                <input type="text" id="adminSearch" placeholder="Search by name or email..." onkeyup="filterUsers()" style="padding:8px; margin-bottom:8px;">
+                <div id="adminUserList" style="max-height:160px; overflow-y:auto; background:#0a0e0a; padding:6px; border-radius:6px;"></div>
+            </div>
 
-            <h4 style="margin-top:12px; font-size:14px;">Set Watch Ad Link</h4>
+            <h4 style="margin-top:15px; font-size:14px;">Set Watch Ad Link</h4>
             <input type="text" id="admAdLink" placeholder="Enter Ad URL/Link" style="padding:8px;">
             <button class="btn-gold" onclick="saveAdLink()">Save Ad Link</button>
 
-            <h4 style="margin-top:12px; font-size:14px;">Add Mission</h4>
+            <h4 style="margin-top:15px; font-size:14px;">Add Mission</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
             <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
@@ -303,7 +305,7 @@
             document.getElementById('secLogin').classList.add('hidden');
             document.getElementById('secDashboard').classList.remove('hidden');
             document.getElementById('walletHeaderBox').classList.remove('hidden');
-            document.getElementById('lblUserEmail').innerText = user.email;
+            document.getElementById('lblUserEmail').innerText = user.displayName || user.email;
 
             db.ref('users/' + user.uid).once('value', snapshot => {
                 if (snapshot.exists()) {
@@ -314,7 +316,7 @@
                         return;
                     }
                 } else {
-                    userData = { wallet: 50.00, banned: false, email: user.email };
+                    userData = { wallet: 50.00, banned: false, email: user.email, name: user.displayName || user.email.split('@')[0] };
                     db.ref('users/' + user.uid).set(userData);
                 }
                 
@@ -340,6 +342,11 @@
         function toggleProfileMenu() {
             let menu = document.getElementById('profileMenu');
             menu.classList.toggle('hidden');
+        }
+
+        function toggleUserListSection() {
+            let sec = document.getElementById('adminUserSection');
+            sec.classList.toggle('hidden');
         }
 
         function logout() {
@@ -614,7 +621,7 @@
                 let list = [];
                 snapshot.forEach(c => list.push(c.val()));
                 list.reverse().forEach((u, i) => {
-                    div.innerHTML += `<p>${i + 1}. ${u.email || 'User'} - <span style="color:#00e676;">₹${(u.wallet||0).toFixed(2)}</span></p>`;
+                    div.innerHTML += `<p>${i + 1}. ${u.name || u.email || 'User'} - <span style="color:#00e676;">₹${(u.wallet||0).toFixed(2)}</span></p>`;
                 });
             });
         }
@@ -649,12 +656,17 @@
             div.innerHTML = "";
             for (let uid in users) {
                 let u = users[uid];
+                let displayName = u.name || u.email || 'User';
                 div.innerHTML += `
-                    <div style="border-bottom:1px solid #444; padding:4px; display:flex; justify-content:space-between; align-items:center;">
-                        <span>${u.email} (₹${u.wallet || 0})</span>
+                    <div style="border-bottom:1px solid #333; padding:6px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <button style="padding:3px; font-size:11px; width:auto;" onclick="adminEditCoin('${uid}')">Edit Coin</button>
-                            <button style="padding:3px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
+                            <strong style="color:#ffd700; font-size:12px; display:block;">${displayName}</strong>
+                            <small style="color:#aaa; font-size:10px;">${u.email || ''}</small>
+                            <div style="color:#00e676; font-size:12px; font-weight:bold;">Wallet: ₹${(u.wallet || 0).toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <button style="padding:4px 8px; font-size:11px; width:auto; background:#d4af37; color:#000;" onclick="adminEditCoin('${uid}')">Edit Coin</button>
+                            <button style="padding:4px 8px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff; margin-top:2px;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
                         </div>
                     </div>
                 `;
@@ -665,8 +677,11 @@
             let query = document.getElementById('adminSearch').value.toLowerCase();
             let filtered = {};
             for (let uid in allUsersData) {
-                if (allUsersData[uid].email && allUsersData[uid].email.toLowerCase().includes(query)) {
-                    filtered[uid] = allUsersData[uid];
+                let u = allUsersData[uid];
+                let nameMatch = u.name && u.name.toLowerCase().includes(query);
+                let emailMatch = u.email && u.email.toLowerCase().includes(query);
+                if (nameMatch || emailMatch) {
+                    filtered[uid] = u;
                 }
             }
             renderUserList(filtered);
