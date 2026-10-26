@@ -33,133 +33,142 @@
 <body>
     <div class="coin-bg"></div>
 
-    <!-- 1. LOGIN SECTION (ONLY GOOGLE) -->
-    <div id="secLogin" class="card" style="text-align:center; margin-top: 80px;">
-        <h2 style="color: #ffd700;" onclick="handleTitleTap()">APK Earning App</h2>
-        <p style="color:#aaa; margin-bottom: 25px;">Golden Earning Platform</p>
-        <button class="btn-google" onclick="googleLogin()">Login with Google (Gmail)</button>
-    </div>
-
-    <!-- 2. DASHBOARD SECTION -->
-    <div id="secDashboard" class="card hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <small style="color:#aaa;">Wallet Balance</small>
-                <div class="wallet" id="lblWallet">₹0.00</div>
-            </div>
-            <button class="btn-tab" style="padding:6px 12px; font-size:12px; width:auto;" onclick="logout()">Logout</button>
-        </div>
-
-        <h2 style="text-align:center; color:#ffd700; font-size:18px; margin:10px 0; cursor:pointer;" onclick="handleTitleTap()">APK Earning App</h2>
-
-        <div style="display:flex; gap:4px; margin-top:10px;">
-            <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
-            <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
-            <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
-            <button class="btn-tab" onclick="switchTab('tabRefer')">Refer</button>
-        </div>
-
-        <!-- Home Tab -->
-        <div id="tabHome" class="tab-content" style="margin-top:15px;">
-            <button class="btn-ludo" onclick="showSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
-            <button class="btn-spin" onclick="showSec('secSpin')">Spin Wheel (₹1 Entry)</button>
-
-            <div style="margin-top:20px; background:rgba(20,20,20,0.8); padding:12px; border-radius:8px; border:1px solid #ffd700;">
-                <h4>UPI Withdrawal (Min. ₹50)</h4>
-                <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI">
-                <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)">
-                <button onclick="requestWithdrawal()">Withdraw to UPI</button>
-                <p id="lblWithdrawStatus" style="color:#ff9800; font-size:13px; margin-top:8px;"></p>
-            </div>
-        </div>
-
-        <!-- Spin Wheel Tab -->
-        <div id="secSpin" class="card hidden" style="margin-top:15px; border:none; background:transparent; text-align:center;">
-            <h3>Lucky Spin Wheel (Entry: ₹1)</h3>
-            <div class="wheel-container">
-                <div class="wheel-needle"></div>
-                <canvas id="wheelCanvas" width="300" height="300"></canvas>
-            </div>
-            <button class="btn-spin" onclick="spinTheWheel()" style="margin-top:10px;">Spin Now (₹1)</button>
-            <button class="btn-tab" onclick="showSec('secDashboard'); switchTab('tabHome');" style="margin-top:10px;">Back</button>
-        </div>
-
-        <!-- Missions Tab -->
-        <div id="tabMissions" class="tab-content hidden" style="margin-top:15px;">
-            <h3>CPAgrip & App Missions</h3>
-            <div id="missionsList">Loading missions...</div>
-        </div>
-
-        <!-- Mission Detail View -->
-        <div id="secMissionDetail" class="card hidden" style="margin-top:15px;">
-            <h3 id="detTitle">Mission Title</h3>
-            <img id="detImg" class="mission-img" src="" alt="">
-            <p style="color:#ccc;">Start button dabate hi link Chrome mein khulegi.</p>
-            <button onclick="startMissionLink()" style="background:#00e676; color:#000;">Start Mission (Open in Chrome)</button>
-            <button class="btn-tab" onclick="showTab('tabMissions')" style="margin-top:10px;">Back to Missions</button>
-        </div>
-
-        <!-- Leaderboard Tab -->
-        <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:15px;">
-            <h3>Weekly Leaderboard</h3>
-            <div id="leaderboardList">Loading...</div>
-        </div>
-
-        <!-- Refer Tab -->
-        <div id="tabRefer" class="tab-content hidden" style="margin-top:15px;">
-            <h3>Refer & Earn</h3>
-            <p>Friends Referred: <span id="lblRefFriends">0</span></p>
-            <input type="text" id="txtReferLink" readonly>
-            <button onclick="shareReferral()">Share Link</button>
-        </div>
-    </div>
-
-    <!-- 3. LUDO LOBBY & GAME SECTION -->
-    <div id="secLudoLobby" class="card hidden">
-        <h2>Ludo 1v1 Match (vs Bot)</h2>
-        <p>Select Entry Fee (₹2 to ₹5000):</p>
-        <select id="ludoEntryFee">
-            <option value="2">₹2 (Win ₹4)</option>
-            <option value="10">₹10 (Win ₹18)</option>
-            <option value="50">₹50 (Win ₹95)</option>
-            <option value="100">₹100 (Win ₹190)</option>
-            <option value="500">₹500 (Win ₹950)</option>
-            <option value="1000">₹1000 (Win ₹1900)</option>
-            <option value="5000">₹5000 (Win ₹9500)</option>
-        </select>
-        <button class="btn-ludo" onclick="startLudoGame()" style="margin-top:15px;">Start Match</button>
-        <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:10px;">Back</button>
-    </div>
-
-    <div id="secLudoPlay" class="card hidden" style="text-align:center;">
-        <h2>Ludo 4 Goti Home Match</h2>
-        <div style="background:#fff; padding:10px; border-radius:8px; display:inline-block; margin:10px 0;">
-            <img src="https://i.ibb.co/30Z0v0C/ludo-board.png" style="width:240px; height:240px; object-fit:contain;" alt="Ludo Board">
-        </div>
-        <p id="lblLudoStatus" style="color:#00e676; font-size:15px;">Apni 4 goti ghar ke andar pahunchane ke liye Dice roll karein!</p>
-        <p id="lblGotiCount" style="color:#ffd700; font-size:14px; font-weight:bold;">Ghar pahunchi goti: 0 / 4</p>
-        <button class="btn-ludo" onclick="rollLudoDice()">Roll Dice & Move Goti</button>
-        <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:15px;">Quit / Back</button>
-    </div>
-
-    <!-- 4. ADMIN PANEL SECTION -->
-    <div id="secAdmin" class="card hidden">
-        <h2 style="color: #ff5722;">Admin Control Panel</h2>
-        <button class="btn-tab" onclick="showSec('secDashboard')">Exit Admin</button>
+    <!-- MAIN APP CONTAINER -->
+    <div id="appContainer" style="max-width: 500px; margin: auto;">
         
-        <h4 style="margin-top:15px;">Search User</h4>
-        <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()">
-        <div id="adminUserList" style="max-height:150px; overflow-y:auto; background:#111; padding:8px; border-radius:6px; margin-top:5px;"></div>
+        <!-- TITLE / HEADER WITH 5-TAP ADMIN TRIGGER -->
+        <div class="card" style="text-align:center; padding: 10px;">
+            <h2 style="color: #ffd700; margin: 5px 0; cursor:pointer;" onclick="handleTitleTap()">APK Earning App</h2>
+            <small style="color:#aaa;">Golden Earning Platform</small>
+        </div>
 
-        <h4 style="margin-top:15px;">Add CPAgrip Mission</h4>
-        <input type="text" id="admMisTitle" placeholder="Mission Title">
-        <input type="text" id="admMisImg" placeholder="Image URL">
-        <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)">
-        <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)">
-        <button onclick="adminAddMission()">Publish Mission</button>
+        <!-- 1. LOGIN SECTION (Inside App Dashboard view when logged out) -->
+        <div id="secLogin" class="card" style="text-align:center;">
+            <h3>Welcome! Please Login</h3>
+            <p style="color:#aaa; font-size: 14px;">Earn money by playing Ludo, Spin & Missions.</p>
+            <button class="btn-google" onclick="googleLogin()">Login with Google (Gmail)</button>
+        </div>
 
-        <h4 style="margin-top:20px;">Withdrawal Requests (Min ₹50)</h4>
-        <div id="adminWithdrawalsList">Loading requests...</div>
+        <!-- 2. DASHBOARD SECTION (Shown when logged in) -->
+        <div id="secDashboard" class="card hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <small style="color:#aaa;">Wallet Balance</small>
+                    <div class="wallet" id="lblWallet">₹0.00</div>
+                </div>
+                <button class="btn-tab" style="padding:6px 12px; font-size:12px; width:auto; background:#d32f2f; color:#fff;" onclick="logout()">Logout</button>
+            </div>
+
+            <div style="display:flex; gap:4px; margin-top:15px;">
+                <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
+                <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
+                <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
+                <button class="btn-tab" onclick="switchTab('tabRefer')">Refer</button>
+            </div>
+
+            <!-- Home Tab -->
+            <div id="tabHome" class="tab-content" style="margin-top:15px;">
+                <button class="btn-ludo" onclick="showSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
+                <button class="btn-spin" onclick="showSec('secSpin')">Spin Wheel (₹1 Entry)</button>
+
+                <div style="margin-top:20px; background:rgba(20,20,20,0.8); padding:12px; border-radius:8px; border:1px solid #ffd700;">
+                    <h4>UPI Withdrawal (Min. ₹50)</h4>
+                    <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI">
+                    <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)">
+                    <button onclick="requestWithdrawal()">Withdraw to UPI</button>
+                    <p id="lblWithdrawStatus" style="color:#ff9800; font-size:13px; margin-top:8px;"></p>
+                </div>
+            </div>
+
+            <!-- Spin Wheel Tab -->
+            <div id="secSpin" class="card hidden" style="margin-top:15px; border:none; background:transparent; text-align:center;">
+                <h3>Lucky Spin Wheel (Entry: ₹1)</h3>
+                <div class="wheel-container">
+                    <div class="wheel-needle"></div>
+                    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+                </div>
+                <button class="btn-spin" onclick="spinTheWheel()" style="margin-top:10px;">Spin Now (₹1)</button>
+                <button class="btn-tab" onclick="showSec('secDashboard'); switchTab('tabHome');" style="margin-top:10px;">Back</button>
+            </div>
+
+            <!-- Missions Tab -->
+            <div id="tabMissions" class="tab-content hidden" style="margin-top:15px;">
+                <h3>CPAgrip & App Missions</h3>
+                <div id="missionsList">Loading missions...</div>
+            </div>
+
+            <!-- Mission Detail View -->
+            <div id="secMissionDetail" class="card hidden" style="margin-top:15px;">
+                <h3 id="detTitle">Mission Title</h3>
+                <img id="detImg" class="mission-img" src="" alt="">
+                <p style="color:#ccc;">Start button dabate hi link Chrome mein khulegi.</p>
+                <button onclick="startMissionLink()" style="background:#00e676; color:#000;">Start Mission (Open in Chrome)</button>
+                <button class="btn-tab" onclick="showTab('tabMissions')" style="margin-top:10px;">Back to Missions</button>
+            </div>
+
+            <!-- Leaderboard Tab -->
+            <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:15px;">
+                <h3>Weekly Leaderboard</h3>
+                <div id="leaderboardList">Loading...</div>
+            </div>
+
+            <!-- Refer Tab -->
+            <div id="tabRefer" class="tab-content hidden" style="margin-top:15px;">
+                <h3>Refer & Earn</h3>
+                <p>Friends Referred: <span id="lblRefFriends">0</span></p>
+                <input type="text" id="txtReferLink" readonly>
+                <button onclick="shareReferral()">Share Link</button>
+            </div>
+        </div>
+
+        <!-- 3. LUDO LOBBY & GAME SECTION -->
+        <div id="secLudoLobby" class="card hidden">
+            <h2>Ludo 1v1 Match (vs Bot)</h2>
+            <p>Select Entry Fee (₹2 to ₹5000):</p>
+            <select id="ludoEntryFee">
+                <option value="2">₹2 (Win ₹4)</option>
+                <option value="10">₹10 (Win ₹18)</option>
+                <option value="50">₹50 (Win ₹95)</option>
+                <option value="100">₹100 (Win ₹190)</option>
+                <option value="500">₹500 (Win ₹950)</option>
+                <option value="1000">₹1000 (Win ₹1900)</option>
+                <option value="5000">₹5000 (Win ₹9500)</option>
+            </select>
+            <button class="btn-ludo" onclick="startLudoGame()" style="margin-top:15px;">Start Match</button>
+            <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:10px;">Back</button>
+        </div>
+
+        <div id="secLudoPlay" class="card hidden" style="text-align:center;">
+            <h2>Ludo 4 Goti Home Match</h2>
+            <div style="background:#fff; padding:10px; border-radius:8px; display:inline-block; margin:10px 0;">
+                <img src="https://i.ibb.co/30Z0v0C/ludo-board.png" style="width:240px; height:240px; object-fit:contain;" alt="Ludo Board">
+            </div>
+            <p id="lblLudoStatus" style="color:#00e676; font-size:15px;">Apni 4 goti ghar ke andar pahunchane ke liye Dice roll karein!</p>
+            <p id="lblGotiCount" style="color:#ffd700; font-size:14px; font-weight:bold;">Ghar pahunchi goti: 0 / 4</p>
+            <button class="btn-ludo" onclick="rollLudoDice()">Roll Dice & Move Goti</button>
+            <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:15px;">Quit / Back</button>
+        </div>
+
+        <!-- 4. ADMIN PANEL SECTION -->
+        <div id="secAdmin" class="card hidden">
+            <h2 style="color: #ff5722;">Admin Control Panel</h2>
+            <button class="btn-tab" onclick="showSec('secDashboard')">Exit Admin</button>
+            
+            <h4 style="margin-top:15px;">Search User</h4>
+            <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()">
+            <div id="adminUserList" style="max-height:150px; overflow-y:auto; background:#111; padding:8px; border-radius:6px; margin-top:5px;"></div>
+
+            <h4 style="margin-top:15px;">Add CPAgrip Mission</h4>
+            <input type="text" id="admMisTitle" placeholder="Mission Title">
+            <input type="text" id="admMisImg" placeholder="Image URL">
+            <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)">
+            <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)">
+            <button onclick="adminAddMission()">Publish Mission</button>
+
+            <h4 style="margin-top:20px;">Withdrawal Requests (Min ₹50)</h4>
+            <div id="adminWithdrawalsList">Loading requests...</div>
+        </div>
+
     </div>
 
     <script>
@@ -192,22 +201,8 @@
             }
         }
 
-        // --- ENHANCED LOCALSTORAGE & GOOGLE LOGIN PERSISTENCE ---
+        // --- LOCALSTORAGE & GOOGLE LOGIN PERSISTENCE ---
         window.onload = function() {
-            // Check Firebase Redirect Result first
-            auth.getRedirectResult().then((result) => {
-                if (result.user) {
-                    processLoginSuccess(result.user);
-                } else {
-                    checkLocalSession();
-                }
-            }).catch((error) => {
-                console.error(error);
-                checkLocalSession();
-            });
-        };
-
-        function checkLocalSession() {
             let savedUid = localStorage.getItem('saved_uid');
             if (savedUid) {
                 db.ref('users/' + savedUid).once('value', snapshot => {
@@ -228,17 +223,14 @@
             } else {
                 showLoginScreen();
             }
-        }
+        };
 
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then((result) => {
                 processLoginSuccess(result.user);
             }).catch((error) => {
-                // Fallback to redirect if popup fails on mobile webview
-                auth.signInWithRedirect(provider).catch(err => {
-                    alert("Google Login Error: " + err.message);
-                });
+                alert("Google Login Error: " + error.message);
             });
         }
 
@@ -324,7 +316,7 @@
             switchTab(tabId);
         }
 
-        // --- SPIN WHEEL LOGIC (Needle stops at ₹0.1 in exactly 3 seconds) ---
+        // --- SPIN WHEEL LOGIC (Stops at ₹0.1 in exactly 3 seconds) ---
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
         const slices = ['₹0.1', '₹2.0', '₹0.5', '₹0.1', '₹1.0', '₹0.1'];
