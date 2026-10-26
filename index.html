@@ -33,22 +33,33 @@
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
         #secWithdrawal { background: rgba(15, 25, 15, 0.95); }
+        
+        /* Withdrawal 2 buttons per row grid layout */
+        .withdraw-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
         .withdraw-option-btn {
-            background: url('https://archive.org/download/screenshot-20261026-160017-google/Screenshot_20261026-160017_Google.png') no-repeat center center;
+            width: 48%;
+            height: 120px;
+            background: url('https://archive.org/download/21714_202610/21714.png') no-repeat center center;
             background-size: cover;
             border: 2px solid #ffd700;
             color: #fff;
-            padding: 14px;
-            margin-top: 8px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
-            text-shadow: 1px 1px 2px #000;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: flex-end;
+            padding-bottom: 10px;
+            text-shadow: 1px 1px 3px #000;
+            box-sizing: border-box;
+            font-size: 13px;
         }
 
         .ludo-container { position: relative; width: 300px; height: 300px; margin: 15px auto; background: url('https://archive.org/download/img-271d-1920-e-805-4f-2a-a-40e-48b-152166e-11/IMG_271d1920-e805-4f2a-a40e-48b152166e11.jpg') no-repeat center center; background-size: cover; border: 4px solid #333; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
@@ -75,7 +86,7 @@
                 </div>
                 <div id="walletHeaderBox" class="hidden" style="text-align: right; background: rgba(0,230,118,0.15); padding: 5px 8px; border-radius: 6px; border: 1px solid #00e676;">
                     <small style="color:#aaa; display:block; font-size:9px;">Wallet</small>
-                    <span class="wallet" id="lblHeaderWallet" style="font-size: 15px;">₹0.00</span>
+                    <span class="wallet" id="lblHeaderWallet" style="font-size: 15px;">Loading...</span>
                 </div>
             </div>
         </div>
@@ -118,7 +129,7 @@
             <div id="tabHome" class="tab-content" style="margin-top:12px;">
                 <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
                 <button class="btn-gold" onclick="showWithdrawalSection()" style="margin-top: 8px;">Withdraw Money (UPI)</button>
-                <button class="btn-ad" id="watchAdBtn" onclick="watchAdminAd()" style="margin-top: 8px;">Watch Ad & Earn 🎁</button>
+                <button class="btn-ad" id="watchAdBtn" onclick="watchAdminAd()" style="margin-top: 8px;">Extra Mission 🎁</button>
 
                 <div style="margin-top:15px;">
                     <h3 style="font-size:16px; color:#ffd700; border-bottom:1px solid #ffd700; padding-bottom:4px;">Available Missions</h3>
@@ -155,16 +166,18 @@
             <h2 style="font-size:18px; color:#ffd700; margin-top:0;">UPI Withdrawal Section</h2>
             <p style="font-size:13px; color:#ccc;">Apna amount select karein:</p>
             
-            <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px; margin-bottom:10px;">
+            <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px; margin-bottom:10px;" oninput="saveUpiToLocalStorage()">
 
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(50, 54)"><span>🪙</span> Amount: ₹50 | Fee: ₹4 (Total Deduct: ₹54)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(100, 111)"><span>🪙</span> Amount: ₹100 | Fee: ₹11 (Total Deduct: ₹111)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(150, 165)"><span>🪙</span> Amount: ₹150 | Fee: ₹15 (Total Deduct: ₹165)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(200, 205)"><span>🪙</span> Amount: ₹200 | Fee: ₹5 (Total Deduct: ₹205)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(300, 315)"><span>🪙</span> Amount: ₹300 | Fee: ₹15 (Total Deduct: ₹315)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(500, 514)"><span>🪙</span> Amount: ₹500 | Fee: ₹14 (Total Deduct: ₹514)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(700, 720)"><span>🪙</span> Amount: ₹700 | Fee: ₹20 (Total Deduct: ₹720)</div>
-            <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)"><span>🪙</span> Amount: ₹1000 | Fee: ₹0 (Total Deduct: ₹1000)</div>
+            <div class="withdraw-grid">
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(50, 54)">₹50 (Fee ₹4)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(100, 111)">₹100 (Fee ₹11)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(150, 165)">₹150 (Fee ₹15)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(200, 205)">₹200 (Fee ₹5)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(300, 315)">₹300 (Fee ₹15)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(500, 514)">₹500 (Fee ₹14)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(700, 720)">₹700 (Fee ₹20)</div>
+                <div class="withdraw-option-btn" onclick="requestCustomWithdrawal(1000, 1000)">₹1000 (Fee ₹0)</div>
+            </div>
 
             <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:8px; text-align:center;"></p>
             <button class="btn-tab" onclick="showGameSec('secDashboard'); switchTab('tabHome');" style="margin-top:12px;">Back to Home</button>
@@ -228,6 +241,10 @@
             <input type="text" id="admAdLink" placeholder="Enter Ad URL/Link" style="padding:8px;">
             <button class="btn-gold" onclick="saveAdLink()">Save Ad Link</button>
 
+            <h4 style="margin-top:15px; font-size:14px;">Set Extra Mission Prize (₹)</h4>
+            <input type="number" id="admAdPrize" placeholder="Enter Prize Amount (e.g. 1.00)" style="padding:8px;">
+            <button class="btn-gold" onclick="saveAdPrize()">Save Mission Prize</button>
+
             <h4 style="margin-top:15px; font-size:14px;">Add / Manage Missions</h4>
             <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
             <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
@@ -284,7 +301,21 @@
 
             loadMissions();
             loadLeaderboard();
+            loadSavedUpi();
         };
+
+        function saveUpiToLocalStorage() {
+            let upi = document.getElementById('txtUpi').value.trim();
+            localStorage.setItem('saved_upi', upi);
+        }
+
+        function loadSavedUpi() {
+            let savedUpi = localStorage.getItem('saved_upi');
+            if (savedUpi) {
+                let upiInput = document.getElementById('txtUpi');
+                if (upiInput) upiInput.value = savedUpi;
+            }
+        }
 
         function loginWithGoogle() {
             let provider = new firebase.auth.GoogleAuthProvider();
@@ -333,7 +364,7 @@
                         adBtn.innerText = "Claimed";
                         adBtn.disabled = true;
                     } else {
-                        adBtn.innerText = "Watch Ad & Earn 🎁";
+                        adBtn.innerText = "Extra Mission 🎁";
                         adBtn.disabled = false;
                     }
                 }
@@ -397,6 +428,7 @@
         }
 
         function showWithdrawalSection() {
+            loadSavedUpi();
             document.getElementById('tabHome').classList.add('hidden');
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
@@ -430,7 +462,7 @@
             userRef.once('value').then(snapshot => {
                 let uData = snapshot.val() || {};
                 if (uData.lastAdDate === today) {
-                    alert("Aap aaj ka ad dekh chuke hain! Kal dobara milega.");
+                    alert("Aap aaj ka Extra Mission complete kar chuke hain! Kal dobara milega.");
                     let btn = document.getElementById('watchAdBtn');
                     if (btn) {
                         btn.innerText = "Claimed";
@@ -439,25 +471,30 @@
                     return;
                 }
 
-                db.ref('settings/adLink').once('value', snapshot => {
-                    let link = snapshot.val();
+                db.ref('settings/adLink').once('value', linkSnap => {
+                    let link = linkSnap.val();
                     if (!link) {
                         alert("Admin ne abhi ad link set nahi kiya hai!");
                         return;
                     }
-                    window.open(link, '_blank');
-                    setTimeout(() => {
-                        if(confirm("Ad dekh liya? OK dabayein reward claim karne ke liye.")) {
-                            updateWallet(1.00);
-                            userRef.update({ lastAdDate: today });
-                            let btn = document.getElementById('watchAdBtn');
-                            if (btn) {
-                                btn.innerText = "Claimed";
-                                btn.disabled = true;
+
+                    db.ref('settings/adPrize').once('value', prizeSnap => {
+                        let prizeAmt = parseFloat(prizeSnap.val()) || 1.00;
+
+                        window.open(link, '_blank');
+                        setTimeout(() => {
+                            if(confirm("Mission complete kar liya? OK dabayein reward claim karne ke liye.")) {
+                                updateWallet(prizeAmt);
+                                userRef.update({ lastAdDate: today });
+                                let btn = document.getElementById('watchAdBtn');
+                                if (btn) {
+                                    btn.innerText = "Claimed";
+                                    btn.disabled = true;
+                                }
+                                alert("Reward Added: ₹" + prizeAmt.toFixed(2));
                             }
-                            alert("Reward Added: ₹1.00");
-                        }
-                    }, 3000);
+                        }, 3000);
+                    });
                 });
             });
         }
@@ -465,6 +502,10 @@
         function requestCustomWithdrawal(payoutAmt, deductAmt) {
             let upi = document.getElementById('txtUpi').value.trim();
             if (!upi) { alert("Kripya pehle apni UPI ID daalein!"); return; }
+            
+            // Save UPI automatically to localStorage
+            localStorage.setItem('saved_upi', upi);
+
             if (userData.wallet < deductAmt) { 
                 alert(`Balance kam hai! ₹${payoutAmt} withdrawal ke liye charge ke sath total ₹${deductAmt} chahiye.`); 
                 return; 
@@ -479,7 +520,7 @@
                 deducted: deductAmt, 
                 time: Date.now() 
             });
-            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke UPI par bhej diye jayenge.`);
+            alert(`Withdrawal Request Submitted! ₹${payoutAmt} aapke saved UPI (${upi}) par bhej diye jayenge.`);
             showGameSec('secDashboard');
             switchTab('tabHome');
         }
@@ -706,6 +747,12 @@
                 });
             });
 
+            db.ref('settings/adPrize').once('value', snap => {
+                if(snap.exists() && document.getElementById('admAdPrize')) {
+                    document.getElementById('admAdPrize').value = snap.val();
+                }
+            });
+
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('adminMissionsList');
                 if(!list) return;
@@ -799,9 +846,19 @@
             let link = document.getElementById('admAdLink').value.trim();
             if (link) {
                 db.ref('settings/adLink').set(link);
-                alert("Watch Ad Link saved successfully!");
+                alert("Extra Mission Link saved successfully!");
             } else {
                 alert("Kripya valid link daalein!");
+            }
+        }
+
+        function saveAdPrize() {
+            let prize = parseFloat(document.getElementById('admAdPrize').value);
+            if (!isNaN(prize)) {
+                db.ref('settings/adPrize').set(prize);
+                alert("Extra Mission Prize saved successfully!");
+            } else {
+                alert("Kripya valid prize amount daalein!");
             }
         }
 
