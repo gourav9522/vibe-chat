@@ -3,63 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APK Earning App</title>
+    <title>APK Earning App - Google Login</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        body { background: linear-gradient(135deg, #0f0f0f, #1a1a1a); color: #ffd700; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 12px; overflow-x: hidden; }
-        .coin-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; opacity: 0.15; background-image: radial-gradient(#ffd700 15%, transparent 16%); background-size: 30px 30px; }
-        .card { background: rgba(30, 30, 30, 0.95); border: 2px solid #ffd700; padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
-        input, button, select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
-        input, select { background: #121212; color: #fff; }
-        button { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; font-weight: bold; cursor: pointer; }
-        .btn-google { background: #db4437; color: #fff; border: none; padding: 12px; font-size: 15px; border-radius: 8px; }
-        .btn-spin { background: linear-gradient(45deg, #7b1fa2, #ab47bc); color: #fff; }
-        .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
-        .btn-tab { background: #222; color: #ffd700; border: 1px solid #ffd700; margin: 4px 0; }
-        .hidden { display: none; }
-        .wallet { font-size: 26px; font-weight: bold; color: #00e676; }
-        
-        /* Spin Wheel with Needle */
-        .wheel-container { position: relative; width: 260px; height: 260px; margin: 20px auto; }
-        #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #ffd700; transition: transform 3s cubic-bezier(0.15, 0.85, 0.15, 1); }
-        .wheel-needle { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 25px solid #ff5722; z-index: 10; }
+        body { 
+            background: linear-gradient(135deg, rgba(11,15,11,0.9), rgba(20,26,20,0.9)), url('https://archive.org/download/image_e899acdc2_202610/__ia_thumb.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed;
+            color: #ffd700; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            overflow-x: hidden; 
+        }
 
-        .mission-card { background: #252525; border: 1px solid #ffd700; padding: 12px; border-radius: 8px; margin-top: 10px; position: relative; z-index: 5; }
-        .mission-img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+        .card { background: rgba(20, 30, 20, 0.95); border: 2px solid #ffd700; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); box-sizing: border-box; }
+        input, button, select { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ffd700; font-size: 15px; box-sizing: border-box; }
+        input, select { background: #121a12; color: #fff; }
+        button { background: linear-gradient(45deg, #00c853, #00e676); color: #000; font-weight: bold; cursor: pointer; border: none; }
+        .btn-gold { background: linear-gradient(45deg, #d4af37, #ffd700); color: #000; }
+        .btn-google { background: #fff; color: #757575; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; }
+        .btn-ludo { background: linear-gradient(45deg, #e65100, #ffa726); color: #fff; }
+        .btn-tg { background: linear-gradient(45deg, #0088cc, #00aced); color: #fff; }
+        .btn-tab { background: #1a261a; color: #ffd700; border: 1px solid #ffd700; margin: 3px 0; padding: 10px; font-size: 13px; }
+        .hidden { display: none; }
+        .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
+
+        /* Real Ludo Board Styling */
+        .ludo-container { position: relative; width: 300px; height: 300px; margin: 15px auto; background: url('https://archive.org/download/img-271d-1920-e-805-4f-2a-a-40e-48b-152166e-11/IMG_271d1920-e805-4f2a-a40e-48b152166e11.jpg') no-repeat center center; background-size: cover; border: 4px solid #333; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .token { position: absolute; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
+        .token-user { background: #2196f3; color: #fff; }
+        .token-bot { background: #ffeb3b; color: #000; }
+
+        .mission-card { background: rgba(24, 36, 24, 0.95); border: 1px solid #00e676; padding: 10px; border-radius: 8px; margin-top: 8px; }
+        .mission-img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
     </style>
 </head>
 <body>
-    <div class="coin-bg"></div>
-
-    <div id="appContainer" style="max-width: 500px; margin: auto;">
+    <div id="appContainer" style="max-width: 480px; margin: auto;">
         
-        <!-- HEADER TITLE WITH 5-TAP ADMIN TRIGGER -->
-        <div class="card" style="text-align:center; padding: 10px;">
-            <h2 style="color: #ffd700; margin: 5px 0; cursor:pointer;" onclick="handleTitleTap()">APK Earning App</h2>
-            <small style="color:#aaa;">Golden Earning Platform</small>
-        </div>
-
-        <!-- MAIN DASHBOARD (Always Visible to Everyone) -->
-        <div id="secDashboard" class="card">
-            
-            <!-- LOGIN / WALLET STATUS BAR -->
-            <div id="authStatusBar" style="background: rgba(255,215,0,0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <div id="loginPromptArea">
-                    <span style="font-size: 14px; color: #ff9800;">Not Logged In</span>
+        <!-- HEADER -->
+        <div class="card" style="border-color: #00e676; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="https://archive.org/download/apk-earner/image_310cd146~2.jpg" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ffd700; object-fit: cover;" alt="Logo">
+                    <div>
+                        <h2 style="color: #ffd700; margin: 0; cursor:pointer; font-size: 16px;" onclick="handleTitleTap()">APK Earning App</h2>
+                        <small style="color:#00e676; font-weight:bold; font-size: 10px;">Ludo King & Earning Platform</small>
+                    </div>
                 </div>
-                <div id="userWalletArea" class="hidden">
-                    <small style="color:#aaa;">Wallet</small>
-                    <div class="wallet" id="lblWallet">₹0.00</div>
-                </div>
-                <div>
-                    <button id="authBtn" class="btn-google" style="margin:0; padding: 8px 14px; font-size: 13px;" onclick="googleLogin()">Login with Google</button>
-                    <button id="logoutBtn" class="btn-tab hidden" style="margin:0; padding: 6px 10px; font-size: 12px; background:#d32f2f; color:#fff;" onclick="logout()">Logout</button>
+                <div id="walletHeaderBox" class="hidden" style="text-align: right; background: rgba(0,230,118,0.15); padding: 5px 8px; border-radius: 6px; border: 1px solid #00e676;">
+                    <small style="color:#aaa; display:block; font-size:9px;">Wallet</small>
+                    <span class="wallet" id="lblHeaderWallet" style="font-size: 15px;">₹0.00</span>
                 </div>
             </div>
+        </div>
 
-            <div style="display:flex; gap:4px; margin-top:10px;">
+        <!-- GOOGLE LOGIN SECTION -->
+        <div id="secLogin" class="card" style="text-align: center; padding: 25px 15px;">
+            <h3 style="color: #ffd700; margin-top:0; font-size:18px;">Welcome to APK Earner</h3>
+            <p style="font-size: 13px; color: #ccc; margin-bottom: 20px;">Ek click mein apne Google Account se login karein!</p>
+            <button class="btn-google" onclick="loginWithGoogle()">
+                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Continue with Google
+            </button>
+        </div>
+
+        <!-- DASHBOARD SECTION -->
+        <div id="secDashboard" class="card hidden">
+            <div id="userProfileArea" style="background: rgba(0,230,118,0.1); padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #00e676; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <small style="color:#aaa; font-size:10px;">Logged in as:</small>
+                    <div id="lblUserEmail" style="color: #00e676; font-weight: bold; font-size: 12px;">User</div>
+                </div>
+                <button class="btn-tab" style="padding: 5px 8px; font-size: 10px; background:#d32f2f; color:#fff; width:auto; margin:0;" onclick="logout()">Logout</button>
+            </div>
+
+            <button class="btn-tg" onclick="window.open('https://t.me/apkearner', '_blank')" style="margin-bottom: 10px; padding: 8px; font-size: 13px; border-radius: 6px;">Join Telegram Support 📢</button>
+
+            <div style="display:flex; gap:3px;">
                 <button class="btn-tab" onclick="switchTab('tabHome')">Home</button>
                 <button class="btn-tab" onclick="switchTab('tabMissions')">Missions</button>
                 <button class="btn-tab" onclick="switchTab('tabLeaderboard')">Leaderboard</button>
@@ -67,64 +92,52 @@
             </div>
 
             <!-- Home Tab -->
-            <div id="tabHome" class="tab-content" style="margin-top:15px;">
-                <button class="btn-ludo" onclick="showSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
-                <button class="btn-spin" onclick="showSec('secSpin')">Spin Wheel (₹1 Entry)</button>
+            <div id="tabHome" class="tab-content" style="margin-top:12px;">
+                <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
 
-                <div style="margin-top:20px; background:rgba(20,20,20,0.8); padding:12px; border-radius:8px; border:1px solid #ffd700;">
-                    <h4>UPI Withdrawal (Min. ₹50)</h4>
-                    <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI">
-                    <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)">
-                    <button onclick="requestWithdrawal()">Withdraw to UPI</button>
-                    <p id="lblWithdrawStatus" style="color:#ff9800; font-size:13px; margin-top:8px;"></p>
+                <div style="margin-top:15px; background:rgba(15,25,15,0.9); padding:10px; border-radius:8px; border:1px solid #00e676;">
+                    <h4 style="color: #ffd700; margin-top:0; font-size:14px;">UPI Withdrawal (Min. ₹50)</h4>
+                    <input type="text" id="txtUpi" placeholder="Enter UPI ID / Paytm UPI" style="padding:10px;">
+                    <input type="number" id="txtAmt" placeholder="Amount (Min ₹50)" style="padding:10px;">
+                    <button class="btn-gold" onclick="requestWithdrawal()">Withdraw to UPI</button>
+                    <p id="lblWithdrawStatus" style="color:#00e676; font-size:12px; margin-top:6px;"></p>
                 </div>
-            </div>
-
-            <!-- Spin Wheel Tab -->
-            <div id="secSpin" class="card hidden" style="margin-top:15px; border:none; background:transparent; text-align:center;">
-                <h3>Lucky Spin Wheel (Entry: ₹1)</h3>
-                <div class="wheel-container">
-                    <div class="wheel-needle"></div>
-                    <canvas id="wheelCanvas" width="300" height="300"></canvas>
-                </div>
-                <button class="btn-spin" onclick="spinTheWheel()" style="margin-top:10px;">Spin Now (₹1)</button>
-                <button class="btn-tab" onclick="showSec('secDashboard'); switchTab('tabHome');" style="margin-top:10px;">Back</button>
             </div>
 
             <!-- Missions Tab -->
-            <div id="tabMissions" class="tab-content hidden" style="margin-top:15px;">
-                <h3>CPAgrip & App Missions</h3>
+            <div id="tabMissions" class="tab-content hidden" style="margin-top:12px;">
+                <h3 style="font-size:16px;">CPAgrip & App Missions</h3>
                 <div id="missionsList">Loading missions...</div>
             </div>
 
             <!-- Mission Detail View -->
-            <div id="secMissionDetail" class="card hidden" style="margin-top:15px;">
-                <h3 id="detTitle">Mission Title</h3>
+            <div id="secMissionDetail" class="card hidden" style="margin-top:12px;">
+                <h3 id="detTitle" style="font-size:16px;">Mission Title</h3>
                 <img id="detImg" class="mission-img" src="" alt="">
-                <p style="color:#ccc;">Start button dabate hi link Chrome mein khulegi.</p>
-                <button onclick="startMissionLink()" style="background:#00e676; color:#000;">Start Mission (Open in Chrome)</button>
-                <button class="btn-tab" onclick="showTab('tabMissions')" style="margin-top:10px;">Back to Missions</button>
+                <p style="color:#ccc; font-size:12px;">Start button dabate hi link Chrome mein khulegi.</p>
+                <button style="background:#00e676; color:#000;" onclick="startMissionLink()">Start Mission (Open in Chrome)</button>
+                <button class="btn-tab" onclick="switchTab('tabMissions')" style="margin-top:8px;">Back to Missions</button>
             </div>
 
             <!-- Leaderboard Tab -->
-            <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:15px;">
-                <h3>Weekly Leaderboard</h3>
-                <div id="leaderboardList">Loading...</div>
+            <div id="tabLeaderboard" class="tab-content hidden" style="margin-top:12px;">
+                <h3 style="font-size:16px;">Weekly Leaderboard</h3>
+                <div id="leaderboardList" style="font-size:13px;">Loading...</div>
             </div>
 
             <!-- Refer Tab -->
-            <div id="tabRefer" class="tab-content hidden" style="margin-top:15px;">
-                <h3>Refer & Earn</h3>
-                <p>Friends Referred: <span id="lblRefFriends">0</span></p>
-                <input type="text" id="txtReferLink" readonly>
-                <button onclick="shareReferral()">Share Link</button>
+            <div id="tabRefer" class="tab-content hidden" style="margin-top:12px;">
+                <h3 style="font-size:16px;">Refer & Earn</h3>
+                <p style="font-size:13px;">Friends Referred: <span id="lblRefFriends">0</span></p>
+                <input type="text" id="txtReferLink" readonly style="padding:10px;">
+                <button class="btn-gold" onclick="shareReferral()">Share Link</button>
             </div>
         </div>
 
         <!-- LUDO LOBBY & GAME SECTION -->
         <div id="secLudoLobby" class="card hidden">
-            <h2>Ludo 1v1 Match (vs Bot)</h2>
-            <p>Select Entry Fee (₹2 to ₹5000):</p>
+            <h2 style="font-size:18px;">Ludo 1v1 Match (vs Bot)</h2>
+            <p style="font-size:13px;">Select Entry Fee (₹2 to ₹5000):</p>
             <select id="ludoEntryFee">
                 <option value="2">₹2 (Win ₹4)</option>
                 <option value="10">₹10 (Win ₹18)</option>
@@ -134,39 +147,56 @@
                 <option value="1000">₹1000 (Win ₹1900)</option>
                 <option value="5000">₹5000 (Win ₹9500)</option>
             </select>
-            <button class="btn-ludo" onclick="startLudoGame()" style="margin-top:15px;">Start Match</button>
-            <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:10px;">Back</button>
+            <button class="btn-ludo" onclick="startLudoGame()" style="margin-top:12px;">Start Match</button>
+            <button class="btn-tab" onclick="showGameSec('secDashboard')" style="margin-top:8px;">Back</button>
         </div>
 
         <div id="secLudoPlay" class="card hidden" style="text-align:center;">
-            <h2>Ludo 4 Goti Home Match</h2>
-            <div style="background:#fff; padding:10px; border-radius:8px; display:inline-block; margin:10px 0;">
-                <img src="https://i.ibb.co/30Z0v0C/ludo-board.png" style="width:240px; height:240px; object-fit:contain;" alt="Ludo Board">
+            <h2 style="font-size:16px; margin:5px 0;">Ludo King 1v1 Arena</h2>
+            
+            <!-- Real Ludo Board with Image & Tokens -->
+            <div class="ludo-container" id="ludoBoardDiv">
+                <!-- User 4 Tokens -->
+                <div class="token token-user" id="u1" style="top: 25px; left: 25px;" onclick="moveToken(0)">1</div>
+                <div class="token token-user" id="u2" style="top: 25px; left: 55px;" onclick="moveToken(1)">2</div>
+                <div class="token token-user" id="u3" style="top: 55px; left: 25px;" onclick="moveToken(2)">3</div>
+                <div class="token token-user" id="u4" style="top: 55px; left: 55px;" onclick="moveToken(3)">4</div>
+                
+                <!-- Bot 4 Tokens -->
+                <div class="token token-bot" id="b1" style="top: 225px; right: 55px;">1</div>
+                <div class="token token-bot" id="b2" style="top: 225px; right: 25px;">2</div>
+                <div class="token token-bot" id="b3" style="top: 255px; right: 55px;">3</div>
+                <div class="token token-bot" id="b4" style="top: 255px; right: 25px;">4</div>
             </div>
-            <p id="lblLudoStatus" style="color:#00e676; font-size:15px;">Apni 4 goti ghar ke andar pahunchane ke liye Dice roll karein!</p>
-            <p id="lblGotiCount" style="color:#ffd700; font-size:14px; font-weight:bold;">Ghar pahunchi goti: 0 / 4</p>
-            <button class="btn-ludo" onclick="rollLudoDice()">Roll Dice & Move Goti</button>
-            <button class="btn-tab" onclick="showSec('secDashboard')" style="margin-top:15px;">Quit / Back</button>
+
+            <p id="lblLudoStatus" style="color:#00e676; font-size:13px; font-weight:bold; margin:5px 0;">Dice roll karein (6 aane par token bahar aayega)!</p>
+            
+            <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin:8px 0;">
+                <div style="background:#121a12; border:2px solid #ffd700; padding:10px 18px; border-radius:8px; font-size:24px; font-weight:bold;" id="diceDisplay">🎲</div>
+                <button class="btn-ludo" style="width:auto; padding:10px 20px;" id="btnRoll" onclick="rollLudoDice()">Roll Dice</button>
+            </div>
+
+            <button class="btn-tab" onclick="showGameSec('secDashboard')" style="margin-top:10px; background:#d32f2f; color:#fff;">Quit Match</button>
         </div>
 
         <!-- ADMIN PANEL SECTION -->
         <div id="secAdmin" class="card hidden">
-            <h2 style="color: #ff5722;">Admin Control Panel</h2>
-            <button class="btn-tab" onclick="showSec('secDashboard')">Exit Admin</button>
+            <h2 style="color: #ff5722; font-size:18px;">Admin Control Panel</h2>
+            <button class="btn-tab" onclick="showGameSec('secDashboard')">Exit Admin</button>
             
-            <h4 style="margin-top:15px;">Search User</h4>
-            <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()">
-            <div id="adminUserList" style="max-height:150px; overflow-y:auto; background:#111; padding:8px; border-radius:6px; margin-top:5px;"></div>
+            <h4 style="margin-top:12px; font-size:14px;">Search User</h4>
+            <input type="text" id="adminSearch" placeholder="Search by email..." onkeyup="filterUsers()" style="padding:8px;">
+            <div id="adminUserList" style="max-height:130px; overflow-y:auto; background:#111; padding:6px; border-radius:6px; margin-top:4px;"></div>
 
-            <h4 style="margin-top:15px;">Add CPAgrip Mission</h4>
-            <input type="text" id="admMisTitle" placeholder="Mission Title">
-            <input type="text" id="admMisImg" placeholder="Image URL">
-            <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)">
-            <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)">
-            <button onclick="adminAddMission()">Publish Mission</button>
+            <h4 style="margin-top:12px; font-size:14px;">Add CPAgrip Mission</h4>
+            <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
+            <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
+            <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
+            <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
+            <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
 
-            <h4 style="margin-top:20px;">Withdrawal Requests (Min ₹50)</h4>
-            <div id="adminWithdrawalsList">Loading requests...</div>
+            <h4 style="margin-top:15px; font-size:14px;">Withdrawal Requests (Min ₹50)</h4>
+            <div id="adminWithdrawalsList" style="font-size:13px;">Loading requests...</div>
         </div>
 
     </div>
@@ -184,7 +214,7 @@
         const db = firebase.database();
 
         let currentUser = null;
-        let userData = { wallet: 0, banned: false, ludoPlayCount: 0, gotiHome: 0 };
+        let userData = { wallet: 0, banned: false };
         let allUsersData = {};
         let activeMissionLink = "";
         let titleClickCount = 0;
@@ -195,49 +225,43 @@
                 titleClickCount = 0;
                 let pass = prompt("Enter Admin Password:");
                 if (pass === "9522856794") {
-                    showSec('secAdmin');
+                    showGameSec('secAdmin');
                     loadAdminData();
                 } else if(pass !== null) { alert("Wrong Password!"); }
             }
         }
 
-        // Check Local Storage session on startup
         window.onload = function() {
-            let savedUid = localStorage.getItem('saved_uid');
-            if (savedUid) {
-                db.ref('users/' + savedUid).once('value', snapshot => {
-                    if (snapshot.exists()) {
-                        currentUser = { uid: savedUid };
-                        userData = snapshot.val();
-                        if (userData.banned) {
-                            alert("Your account has been banned!");
-                            logout();
-                            return;
-                        }
-                        updateUIAfterLogin(savedUid);
-                    } else {
-                        localStorage.removeItem('saved_uid');
-                    }
-                });
-            }
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    handleSuccessfulAuth(user);
+                } else {
+                    showLoginScreen();
+                }
+            });
+
             loadMissions();
             loadLeaderboard();
         };
 
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then((result) => {
-                processLoginSuccess(result.user);
-            }).catch((error) => {
-                auth.signInWithRedirect(provider).catch(err => {
-                    alert("Google Login Error: " + err.message);
+        function loginWithGoogle() {
+            let provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    handleSuccessfulAuth(result.user);
+                })
+                .catch((error) => {
+                    alert("Google Login Error: " + error.message);
                 });
-            });
         }
 
-        function processLoginSuccess(user) {
-            localStorage.setItem('saved_uid', user.uid);
+        function handleSuccessfulAuth(user) {
             currentUser = user;
+            document.getElementById('secLogin').classList.add('hidden');
+            document.getElementById('secDashboard').classList.remove('hidden');
+            document.getElementById('walletHeaderBox').classList.remove('hidden');
+            document.getElementById('lblUserEmail').innerText = user.email;
+
             db.ref('users/' + user.uid).once('value', snapshot => {
                 if (snapshot.exists()) {
                     userData = snapshot.val();
@@ -247,77 +271,49 @@
                         return;
                     }
                 } else {
-                    userData = { 
-                        wallet: 50.00, 
-                        banned: false, 
-                        email: user.email || user.providerData[0].email, 
-                        ludoPlayCount: 0, 
-                        gotiHome: 0 
-                    };
+                    userData = { wallet: 50.00, banned: false, email: user.email };
                     db.ref('users/' + user.uid).set(userData);
                 }
-                updateUIAfterLogin(user.uid);
+                
+                document.getElementById('lblHeaderWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
+                checkWithdrawalTimer();
+
+                db.ref('users/' + user.uid).on('value', snap => {
+                    if (snap.exists()) {
+                        userData = snap.val();
+                        document.getElementById('lblHeaderWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
+                    }
+                });
             });
         }
 
-        function updateUIAfterLogin(uid) {
-            document.getElementById('loginPromptArea').classList.add('hidden');
-            document.getElementById('userWalletArea').classList.remove('hidden');
-            document.getElementById('authBtn').classList.add('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden');
-            
-            document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-            document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + uid;
-            checkWithdrawalTimer();
-
-            // Realtime wallet sync
-            db.ref('users/' + uid).on('value', snap => {
-                if (snap.exists()) {
-                    userData = snap.val();
-                    document.getElementById('lblWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-                }
-            });
-        }
-
-        function logout() { 
-            localStorage.removeItem('saved_uid');
-            currentUser = null;
-            userData = { wallet: 0, banned: false, ludoPlayCount: 0, gotiHome: 0 };
-            auth.signOut().then(() => {
-                document.getElementById('loginPromptArea').classList.remove('hidden');
-                document.getElementById('userWalletArea').classList.add('hidden');
-                document.getElementById('authBtn').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.add('hidden');
-                document.getElementById('lblWallet').innerText = "₹0.00";
-                showSec('secDashboard');
-                switchTab('tabHome');
-            });
-        }
-
-        function checkLoginBeforeAction() {
-            let savedUid = localStorage.getItem('saved_uid');
-            if (!savedUid && !currentUser) {
-                alert("Pehle Google Login karein!");
-                googleLogin();
-                return false;
-            }
-            return true;
-        }
-
-        function updateWallet(amt) {
-            userData.wallet += amt;
-            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
-            db.ref('users/' + uid + '/wallet').set(userData.wallet);
-        }
-
-        function showSec(id) {
+        function showLoginScreen() {
             document.getElementById('secDashboard').classList.add('hidden');
-            document.getElementById('secSpin').classList.add('hidden');
+            document.getElementById('walletHeaderBox').classList.add('hidden');
+            document.getElementById('secLogin').classList.remove('hidden');
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                currentUser = null;
+                userData = { wallet: 0, banned: false };
+                showLoginScreen();
+            });
+        }
+
+        function showGameSec(id) {
+            document.getElementById('tabHome').classList.add('hidden');
             document.getElementById('secMissionDetail').classList.add('hidden');
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
-            document.getElementById(id).classList.remove('hidden');
+            
+            if(id === 'secDashboard') {
+                switchTab('tabHome');
+            } else {
+                document.getElementById(id).classList.remove('hidden');
+            }
         }
 
         function switchTab(tabId) {
@@ -325,91 +321,131 @@
             document.getElementById(tabId).classList.remove('hidden');
         }
 
-        function showTab(tabId) {
-            showSec('secDashboard');
-            switchTab(tabId);
-        }
-
-        // --- SPIN WHEEL LOGIC ---
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
-        const slices = ['₹0.1', '₹2.0', '₹0.5', '₹0.1', '₹1.0', '₹0.1'];
-        const sliceColors = ['#ffd700', '#ff5722', '#4caf50', '#03a9f4', '#e91e63', '#9c27b0'];
-        
-        function drawWheel(angle = 0) {
-            let numSlices = slices.length;
-            let arc = (2 * Math.PI) / numSlices;
-            ctx.clearRect(0, 0, 300, 300);
-            ctx.save();
-            ctx.translate(150, 150);
-            ctx.rotate(angle);
-            for (let i = 0; i < numSlices; i++) {
-                ctx.beginPath();
-                ctx.fillStyle = sliceColors[i];
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, 140, i * arc, (i + 1) * arc);
-                ctx.lineTo(0, 0);
-                ctx.fill();
-                ctx.save();
-                ctx.rotate(i * arc + arc / 2);
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px sans-serif";
-                ctx.fillText(slices[i], 70, 10);
-                ctx.restore();
+        function updateWallet(amt) {
+            userData.wallet += amt;
+            if(currentUser) {
+                db.ref('users/' + currentUser.uid + '/wallet').set(userData.wallet);
             }
-            ctx.restore();
-        }
-        drawWheel();
-
-        function spinTheWheel() {
-            if (!checkLoginBeforeAction()) return;
-            if (userData.wallet < 1.0) { alert("Balance kam hai! Minimum ₹1 chahiye."); return; }
-            updateWallet(-1.0);
-            
-            let targetDegree = 360 * 5 + 60; 
-            canvas.style.transform = `rotate(${targetDegree}deg)`;
-            
-            setTimeout(() => {
-                updateWallet(0.1);
-                alert("Spin Win: ₹0.10");
-            }, 3000);
         }
 
-        // --- LUDO GAME LOGIC ---
+        // --- REAL LUDO KING ENGINE ---
         let currentEntry = 2;
+        let userTokenPos = [-1, -1, -1, -1];
+        let botTokenPos = [-1, -1, -1, -1];
+        let currentDice = 0;
+        let isUserTurn = true;
+
+        const pathCoords = [
+            {top: 130, left: 15}, {top: 130, left: 35}, {top: 130, left: 55}, {top: 130, left: 75}, {top: 130, left: 95},
+            {top: 95, left: 130}, {top: 75, left: 130}, {top: 55, left: 130}, {top: 35, left: 130}, {top: 15, left: 130}, {top: 15, left: 150},
+            {top: 15, left: 170}, {top: 35, left: 170}, {top: 55, left: 170}, {top: 75, left: 170}, {top: 95, left: 170},
+            {top: 130, left: 205}, {top: 130, left: 225}, {top: 130, left: 245}, {top: 130, left: 265}, {top: 130, left: 285}, {top: 150, left: 285},
+            {top: 170, left: 285}, {top: 170, left: 265}, {top: 170, left: 245}, {top: 170, left: 225}, {top: 170, left: 205},
+            {top: 205, left: 170}, {top: 225, left: 170}, {top: 245, left: 170}, {top: 265, left: 170}, {top: 285, left: 170}, {top: 285, left: 150},
+            {top: 285, left: 130}, {top: 265, left: 130}, {top: 245, left: 130}, {top: 225, left: 130}, {top: 205, left: 130},
+            {top: 170, left: 95}, {top: 170, left: 75}, {top: 170, left: 55}, {top: 170, left: 35}, {top: 170, left: 15}, {top: 150, left: 15}
+        ];
+
+        const yardCoordsUser = [
+            {top: 25, left: 25}, {top: 25, left: 55}, {top: 55, left: 25}, {top: 55, left: 55}
+        ];
+        const yardCoordsBot = [
+            {top: 225, left: 225}, {top: 225, left: 255}, {top: 255, left: 225}, {top: 255, left: 255}
+        ];
+
         function startLudoGame() {
-            if (!checkLoginBeforeAction()) return;
             currentEntry = parseFloat(document.getElementById('ludoEntryFee').value);
             if (userData.wallet < currentEntry) { alert("Insufficient Balance!"); return; }
             updateWallet(-currentEntry);
-            userData.gotiHome = 0;
-            document.getElementById('lblGotiCount').innerText = "Ghar pahunchi goti: 0 / 4";
-            showSec('secLudoPlay');
+            
+            userTokenPos = [-1, -1, -1, -1];
+            botTokenPos = [-1, -1, -1, -1];
+            isUserTurn = true;
+            document.getElementById('lblLudoStatus').innerText = "Aapka turn! Dice roll karein (6 aane par token khulega).";
+            updateTokenUI();
+            showGameSec('secLudoPlay');
         }
 
         function rollLudoDice() {
-            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
-            let count = (userData.ludoPlayCount || 0) + 1;
-            db.ref('users/' + uid + '/ludoPlayCount').set(count);
+            if (!isUserTurn) return;
+            currentDice = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('diceDisplay').innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][currentDice - 1];
+            document.getElementById('lblLudoStatus').innerText = `Aapko mila: ${currentDice}. Chalne ke liye apni goti par click karein!`;
+        }
 
-            let winCondition = (count % 2 === 0);
-            let uDice = winCondition ? 6 : 2;
-            let bDice = winCondition ? 3 : 5;
-
-            if (winCondition) {
-                if(userData.gotiHome < 4) userData.gotiHome++;
-                document.getElementById('lblGotiCount').innerText = `Ghar pahunchi goti: ${userData.gotiHome} / 4`;
-                
-                if(userData.gotiHome === 4) {
-                    let winAmt = currentEntry * 1.9;
-                    updateWallet(winAmt);
-                    alert(`Badhai ho! Aapne apni chaaron goti ghar mein ghusa li aur ₹${winAmt} jeet liye!`);
-                    showSec('secDashboard');
+        function moveToken(idx) {
+            if (!isUserTurn || currentDice === 0) return;
+            
+            let pos = userTokenPos[idx];
+            if (pos === -1) {
+                if (currentDice === 6) {
+                    userTokenPos[idx] = 0;
+                    currentDice = 0;
+                    updateTokenUI();
+                    checkBotTurn();
                 } else {
-                    document.getElementById('lblLudoStatus').innerText = `Sahi chaal! Dice: ${uDice} vs Bot: ${bDice}. Goti aage badhi!`;
+                    alert("6 aane par hi token yard se bahar niklega!");
                 }
             } else {
-                document.getElementById('lblLudoStatus').innerText = `Bot ne goti kaat di! Dice: ${uDice} vs Bot: ${bDice}. Phir se koshish karein!`;
+                pos += currentDice;
+                if (pos >= pathCoords.length) pos = pathCoords.length - 1;
+                userTokenPos[idx] = pos;
+                currentDice = 0;
+                updateTokenUI();
+                
+                if (userTokenPos.every(p => p >= pathCoords.length - 1)) {
+                    let winAmt = currentEntry * 1.9;
+                    updateWallet(winAmt);
+                    alert(`Badhai ho! Aapne Ludo match jeet liya aur ₹${winAmt} mil gaye!`);
+                    showGameSec('secDashboard');
+                    return;
+                }
+                checkBotTurn();
+            }
+        }
+
+        function checkBotTurn() {
+            isUserTurn = false;
+            document.getElementById('lblLudoStatus').innerText = "Bot chal raha hai...";
+            
+            setTimeout(() => {
+                let botDice = Math.floor(Math.random() * 6) + 1;
+                let activeBotIdx = botTokenPos.findIndex(p => p !== -1);
+                
+                if (activeBotIdx === -1 && botDice === 6) {
+                    botTokenPos[0] = 0;
+                } else if (activeBotIdx !== -1) {
+                    botTokenPos[activeBotIdx] += botDice;
+                    if (botTokenPos[activeBotIdx] >= pathCoords.length) botTokenPos[activeBotIdx] = pathCoords.length - 1;
+                }
+                
+                updateTokenUI();
+                isUserTurn = true;
+                document.getElementById('lblLudoStatus').innerText = "Aapka turn! Dice roll karein.";
+            }, 1200);
+        }
+
+        function updateTokenUI() {
+            for (let i = 0; i < 4; i++) {
+                let el = document.getElementById('u' + (i + 1));
+                let p = userTokenPos[i];
+                if (p === -1) {
+                    el.style.top = yardCoordsUser[i].top + 'px';
+                    el.style.left = yardCoordsUser[i].left + 'px';
+                } else {
+                    el.style.top = pathCoords[p].top + 'px';
+                    el.style.left = pathCoords[p].left + 'px';
+                }
+
+                let bel = document.getElementById('b' + (i + 1));
+                let bp = botTokenPos[i];
+                if (bp === -1) {
+                    bel.style.top = yardCoordsBot[i].top + 'px';
+                    bel.style.left = yardCoordsBot[i].left + 'px';
+                } else {
+                    bel.style.top = pathCoords[bp].top + 'px';
+                    bel.style.left = pathCoords[bp].left + 'px';
+                }
             }
         }
 
@@ -422,7 +458,6 @@
                 snapshot.forEach(child => {
                     let m = child.val();
                     let mId = child.key;
-                    if(userData.completed && userData.completed[mId]) return;
                     list.innerHTML += `
                         <div class="mission-card">
                             <img src="${m.image}" class="mission-img">
@@ -436,26 +471,21 @@
         }
 
         function openMissionDetail(title, img, link, mId, prize) {
-            if (!checkLoginBeforeAction()) return;
             document.getElementById('detTitle').innerText = title;
             document.getElementById('detImg').src = img;
             activeMissionLink = link;
             window.currentMissionId = mId;
             window.currentMissionPrize = prize;
-            showSec('secMissionDetail');
+            switchTab('secMissionDetail');
         }
 
         function startMissionLink() {
             window.open(activeMissionLink, '_blank');
             setTimeout(() => {
-                let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
                 if(confirm("Mission complete ho gaya? OK dabayein reward claim karne ke liye.")) {
-                    if(!userData.completed) userData.completed = {};
-                    userData.completed[window.currentMissionId] = true;
-                    db.ref('users/' + uid + '/completed').set(userData.completed);
                     updateWallet(window.currentMissionPrize);
                     alert("Reward Added: ₹" + window.currentMissionPrize);
-                    showTab('tabMissions');
+                    switchTab('tabMissions');
                 }
             }, 3000);
         }
@@ -475,8 +505,6 @@
 
         // --- WITHDRAWAL ---
         function requestWithdrawal() {
-            if (!checkLoginBeforeAction()) return;
-            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
             let upi = document.getElementById('txtUpi').value.trim();
             let amt = parseFloat(document.getElementById('txtAmt').value);
             if (!upi || isNaN(amt)) { alert("Enter valid UPI ID and Amount."); return; }
@@ -484,15 +512,14 @@
             if (amt > userData.wallet) { alert("Insufficient Balance!"); return; }
 
             updateWallet(-amt);
-            db.ref('withdrawals').push({ uid: uid, email: userData.email, upi: upi, amount: amt, time: Date.now() });
-            localStorage.setItem('lock_' + uid, Date.now() + 86400000);
+            db.ref('withdrawals').push({ uid: currentUser.uid, email: userData.email, upi: upi, amount: amt, time: Date.now() });
+            localStorage.setItem('lock_' + currentUser.uid, Date.now() + 86400000);
             checkWithdrawalTimer();
             alert("Withdrawal Requested Successfully!");
         }
 
         function checkWithdrawalTimer() {
-            let uid = currentUser ? currentUser.uid : localStorage.getItem('saved_uid');
-            let lock = localStorage.getItem('lock_' + uid);
+            let lock = localStorage.getItem('lock_' + currentUser.uid);
             let lbl = document.getElementById('lblWithdrawStatus');
             if (lock && Date.now() < lock) {
                 let rem = lock - Date.now();
@@ -501,7 +528,7 @@
             } else { lbl.innerText = ""; }
         }
 
-        // --- ADMIN PANEL FUNCTIONS ---
+        // --- ADMIN PANEL ---
         function loadAdminData() {
             db.ref('users').on('value', snapshot => {
                 allUsersData = snapshot.val() || {};
@@ -515,9 +542,9 @@
                     let w = child.val();
                     let id = child.key;
                     list.innerHTML += `
-                        <div style="background:#222; padding:8px; margin-top:5px; border-radius:5px;">
+                        <div style="background:#222; padding:6px; margin-top:4px; border-radius:4px;">
                             <p>${w.email} | UPI: ${w.upi} | ₹${w.amount}</p>
-                            <button style="background:#00e676; padding:6px;" onclick="approveWithdrawal('${id}')">Approve & Pay</button>
+                            <button style="background:#00e676; padding:4px; color:#000;" onclick="approveWithdrawal('${id}')">Approve & Pay</button>
                         </div>
                     `;
                 });
@@ -530,11 +557,11 @@
             for (let uid in users) {
                 let u = users[uid];
                 div.innerHTML += `
-                    <div style="border-bottom:1px solid #444; padding:5px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="border-bottom:1px solid #444; padding:4px; display:flex; justify-content:space-between; align-items:center;">
                         <span>${u.email} (₹${u.wallet || 0})</span>
                         <div>
-                            <button style="padding:4px; font-size:12px;" onclick="adminEditCoin('${uid}')">Coin</button>
-                            <button style="padding:4px; font-size:12px; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
+                            <button style="padding:3px; font-size:11px; width:auto;" onclick="adminEditCoin('${uid}')">Coin</button>
+                            <button style="padding:3px; font-size:11px; width:auto; background:${u.banned?'#4caf50':'#d32f2f'}; color:#fff;" onclick="adminToggleBan('${uid}', ${!!u.banned})">${u.banned?'Unban':'Ban'}</button>
                         </div>
                     </div>
                 `;
