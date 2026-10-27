@@ -255,24 +255,21 @@
                 <div id="adminUserList" style="max-height:160px; overflow-y:auto; background:#0a0e0a; padding:6px; border-radius:6px;">Loading users...</div>
             </div>
 
-            <h4 style="margin-top:15px; font-size:14px;">Set Watch Ad Link</h4>
-            <input type="text" id="admAdLink" placeholder="Enter Ad URL/Link" style="padding:8px;">
-            <button class="btn-gold" onclick="saveAdLink()">Save Ad Link</button>
+            <!-- Toggle Mission Management Section -->
+            <button class="btn-gold" style="margin-top:12px;" onclick="toggleMissionSection()">📋 Show/Hide Mission Management</button>
+            <div id="adminMissionSection" class="hidden" style="background:#111; padding:10px; border-radius:8px; margin-top:8px; border:1px solid #ffd700;">
+                <h4 style="margin-top:5px; font-size:14px; color:#ffd700;">Add / Manage Missions</h4>
+                <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
+                <textarea id="admMisDesc" placeholder="Mission Details & Instructions..." style="padding:8px; height:60px;"></textarea>
+                <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
+                <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
+                <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
+                <input type="number" id="admMisDays" placeholder="Valid Days / Expiry (e.g. 7 days)" style="padding:8px;">
+                <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
+            </div>
 
-            <h4 style="margin-top:15px; font-size:14px;">Set Extra Mission Prize (₹)</h4>
-            <input type="number" id="admAdPrize" placeholder="Enter Prize Amount (e.g. 1.00)" style="padding:8px;">
-            <button class="btn-gold" onclick="saveAdPrize()">Save Mission Prize</button>
-
-            <h4 style="margin-top:15px; font-size:14px;">Add / Manage Missions</h4>
-            <input type="text" id="admMisTitle" placeholder="Mission Title" style="padding:8px;">
-            <textarea id="admMisDesc" placeholder="Mission Details & Instructions..." style="padding:8px; height:60px;"></textarea>
-            <input type="text" id="admMisImg" placeholder="Image URL" style="padding:8px;">
-            <input type="text" id="admMisLink" placeholder="Tracking Link (Chrome)" style="padding:8px;">
-            <input type="number" id="admMisPrize" placeholder="Win Prize Amount (₹)" style="padding:8px;">
-            <input type="number" id="admMisDays" placeholder="Valid Days / Expiry (e.g. 7 days)" style="padding:8px;">
-            <button class="btn-gold" onclick="adminAddMission()">Publish Mission</button>
-
-            <div id="adminMissionsList" style="margin-top:12px;"></div>
+            <h4 style="margin-top:15px; font-size:14px; color:#ffd700;">Active Missions & Pending Users List</h4>
+            <div id="adminMissionsList" style="margin-top:8px;"></div>
 
             <h4 style="margin-top:15px; font-size:14px;">Pending Withdrawal Requests</h4>
             <div id="adminWithdrawalsList" style="font-size:13px;">Loading requests...</div>
@@ -429,6 +426,11 @@
             }
         }
 
+        function toggleMissionSection() {
+            let sec = document.getElementById('adminMissionSection');
+            sec.classList.toggle('hidden');
+        }
+
         function logout() {
             auth.signOut().then(() => {
                 currentUser = null;
@@ -462,7 +464,6 @@
             let name = encodeURIComponent(userData.name || currentUser.email.split('@')[0]);
             let email = encodeURIComponent(currentUser.email || '');
 
-            // 30% payout calculation parameter setup for survey tracking (Multiplier = 0.30)
             let surveyUrl = `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${uid}&username=${name}&email=${email}&subid_1=30pct&subid_2=`;
             document.getElementById('cpxSurveyIframe').src = surveyUrl;
 
@@ -776,9 +777,10 @@
 
         // --- ADMIN PANEL ---
         function loadAdminData() {
-            db.ref('users').on('value', snapshot => {
-                allUsersData = snapshot.val() || {};
+            db.ref('users').on('value', userSnap => {
+                allUsersData = userSnap.val() || {};
                 renderUserList(allUsersData);
+                renderAdminMissions();
             });
 
             db.ref('withdrawals').on('value', snapshot => {
@@ -797,31 +799,85 @@
                     `;
                 });
             });
+        }
 
-            db.ref('missions').on('value', snapshot => {
+        function renderAdminMissions() {
+            db.ref('missions').once('value', snapshot => {
                 let list = document.getElementById('adminMissionsList');
                 if(!list) return;
-                list.innerHTML = "<h4 style='color:#ffd700; font-size:13px; margin:10px 0 5px 0;'>Manage Missions:</h4>";
-                if (!snapshot.exists()) { list.innerHTML += "<p style='font-size:12px; color:#aaa;'>No missions found.</p>"; return; }
+                list.innerHTML = "";
+                if (!snapshot.exists()) { list.innerHTML = "<p style='font-size:12px; color:#aaa;'>No missions found.</p>"; return; }
+
                 snapshot.forEach(child => {
                     let m = child.val();
                     let mId = child.key;
+                    
+                    let pendingUsersHtml = "";
+                    for (let uid in allUsersData) {
+                        let u = allUsersData[uid];
+                        if (u.pendingMissions && u.pendingMissions[mId]) {
+                            let uName = u.name || u.email || uid;
+                            pendingUsersHtml += `
+                                <div style="background:#0a0e0a; padding:6px; margin-top:4px; border-radius:4px; display:flex; justify-content:space-between; align-items:center; border:1px dashed #00e676;">
+                                    <span style="font-size:12px; color:#00e676;">${uName}</span>
+                                    <button style="background:#00e676; color:#000; padding:4px 8px; font-size:11px; width:auto; margin:0;" onclick="approveMissionUser('${uid}', '${mId}', ${m.prize})">✅ Complete / Approve</button>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    if (!pendingUsersHtml) {
+                        pendingUsersHtml = "<p style='font-size:11px; color:#aaa; margin:4px 0;'>No pending users for this mission.</p>";
+                    }
+
                     list.innerHTML += `
-                        <div style="background:#1a1a1a; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #444; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <span style="font-size:12px; color:#fff; display:block; font-weight:bold;">${m.title}</span>
-                                <small style="color:#00e676; font-size:11px;">₹${m.prize} | Days: ${m.days || 7}</small>
+                        <div style="background:#1a1a1a; padding:10px; margin-top:8px; border-radius:6px; border:1px solid #444;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <span style="font-size:13px; color:#ffd700; display:block; font-weight:bold;">${m.title}</span>
+                                    <small style="color:#00e676; font-size:11px;">Prize: ₹${m.prize} | Days: ${m.days || 7}</small>
+                                </div>
+                                <button style="background:#d32f2f; color:#fff; padding:4px 8px; font-size:11px; width:auto; margin:0;" onclick="adminDeleteMission('${mId}')">Delete</button>
                             </div>
-                            <button style="background:#d32f2f; color:#fff; padding:4px 8px; font-size:11px; width:auto; margin:0;" onclick="adminDeleteMission('${mId}')">Delete</button>
+                            <div style="margin-top:8px; border-top:1px solid #333; padding-top:6px;">
+                                <strong style="font-size:11px; color:#ffeb3b;">Pending Users (Manual Approve):</strong>
+                                ${pendingUsersHtml}
+                            </div>
                         </div>
                     `;
                 });
             });
         }
 
+        function approveMissionUser(uid, mId, prize) {
+            if (confirm("Is user ka mission approve karke wallet mein ₹" + prize + " add karein?")) {
+                let userRef = db.ref('users/' + uid);
+                userRef.once('value', snap => {
+                    if (snap.exists()) {
+                        let uData = snap.val();
+                        let currentWallet = parseFloat(uData.wallet || 0);
+                        let newWallet = currentWallet + parseFloat(prize);
+
+                        let updates = {};
+                        updates['wallet'] = newWallet;
+                        updates['pendingMissions/' + mId] = null;
+                        updates['completedMissions/' + mId] = true;
+
+                        userRef.update(updates).then(() => {
+                            alert("Mission approved successfully! ₹" + prize + " user ke wallet mein add ho gaye.");
+                            loadAdminData();
+                        });
+                    }
+                });
+            }
+        }
+
         function adminDeleteMission(mId) {
             if (confirm("Mission delete karein?")) {
-                db.ref('missions/' + mId).remove().then(() => alert("Mission deleted successfully!"));
+                db.ref('missions/' + mId).remove().then(() => {
+                    alert("Mission deleted successfully!");
+                    loadAdminData();
+                });
             }
         }
 
@@ -842,6 +898,7 @@
                 document.getElementById('admMisLink').value = "";
                 document.getElementById('admMisPrize').value = "";
                 document.getElementById('admMisDays').value = "";
+                loadAdminData();
             } else { alert("Sabhi fields bharein!"); }
         }
 
@@ -880,14 +937,14 @@
 
         function filterUsers() {
             let query = document.getElementById('adminSearch').value.toLowerCase();
-            let filtered = {};
+            let filteredObj = {};
             for (let uid in allUsersData) {
                 let u = allUsersData[uid];
                 if ((u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query))) {
-                    filtered[uid] = u;
+                    filteredObj[uid] = u;
                 }
             }
-            renderUserList(filtered);
+            renderUserList(filteredObj);
         }
 
         function adminEditCoin(uid) {
