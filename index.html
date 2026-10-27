@@ -33,6 +33,7 @@
         .wallet { font-size: 22px; font-weight: bold; color: #00e676; }
 
         #secWithdrawal { background: rgba(15, 25, 15, 0.95); }
+        #secSurveys { background: rgba(15, 25, 15, 0.95); }
         
         .withdraw-grid {
             display: flex;
@@ -140,7 +141,7 @@
             <div id="tabHome" class="tab-content" style="margin-top:12px;">
                 <button class="btn-ludo" onclick="showGameSec('secLudoLobby')">Play Ludo 1v1 (₹2 - ₹5000)</button>
                 <button class="btn-gold" onclick="showWithdrawalSection()" style="margin-top: 8px;">Withdraw Money (UPI)</button>
-                <button class="btn-ad" id="watchAdBtn" onclick="watchAdminAd()" style="margin-top: 8px;">Extra Mission 🎁</button>
+                <button class="btn-ad" onclick="openSurveysSection()" style="margin-top: 8px;">Complete Surveys 📋</button>
 
                 <div style="margin-top:15px;">
                     <h3 style="font-size:16px; color:#ffd700; border-bottom:1px solid #ffd700; padding-bottom:4px;">Available Missions</h3>
@@ -161,6 +162,16 @@
                 <input type="text" id="txtReferLink" readonly style="padding:10px;">
                 <button class="btn-gold" onclick="shareReferral()">Share Link</button>
             </div>
+        </div>
+
+        <!-- SURVEYS SECTION -->
+        <div id="secSurveys" class="card hidden">
+            <h2 style="font-size:18px; color:#ffd700; margin-top:0;">CPX Research Surveys</h2>
+            <p style="font-size:12px; color:#ccc; margin-bottom:10px;">Surveys poore karein aur 30% instant reward earn karein!</p>
+            <div style="width:100%; background:#fff; border-radius:8px; overflow:hidden;">
+                <iframe id="cpxSurveyIframe" width="100%" frameBorder="0" height="600px" style="border:none;"></iframe>
+            </div>
+            <button class="btn-tab" onclick="showGameSec('secDashboard')" style="margin-top:12px; background:#d32f2f; color:#fff;">Back to Home</button>
         </div>
 
         <!-- WITHDRAWAL SECTION -->
@@ -319,7 +330,6 @@
 
         window.onload = function() {
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
-                // Handle redirect result when coming back from browser login
                 auth.getRedirectResult().then((result) => {
                     if (result.user) {
                         handleSuccessfulAuth(result.user);
@@ -356,7 +366,6 @@
             }
         }
 
-        // Using signInWithRedirect so Google login smoothly opens in system Chrome browser without white screen
         function loginWithGoogle() {
             let provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithRedirect(provider).catch((error) => {
@@ -392,29 +401,10 @@
                 document.getElementById('txtReferLink').value = "https://apk-earner.firebaseapp.com/?ref=" + user.uid;
                 checkWithdrawalTimer();
 
-                const today = new Date().toISOString().split('T')[0];
-                let adBtn = document.getElementById('watchAdBtn');
-                if (adBtn) {
-                    if (userData.lastAdDate === today) {
-                        adBtn.innerText = "Claimed";
-                        adBtn.disabled = true;
-                    } else {
-                        adBtn.innerText = "Extra Mission 🎁";
-                        adBtn.disabled = false;
-                    }
-                }
-
                 db.ref('users/' + user.uid).on('value', snap => {
                     if (snap.exists()) {
                         userData = snap.val();
                         document.getElementById('lblHeaderWallet').innerText = "₹" + parseFloat(userData.wallet || 0).toFixed(2);
-                        
-                        let currentToday = new Date().toISOString().split('T')[0];
-                        let btn = document.getElementById('watchAdBtn');
-                        if (btn && userData.lastAdDate === currentToday) {
-                            btn.innerText = "Claimed";
-                            btn.disabled = true;
-                        }
                     }
                 });
             });
@@ -453,12 +443,35 @@
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
             document.getElementById('secWithdrawal').classList.add('hidden');
+            document.getElementById('secSurveys').classList.add('hidden');
             
             if(id === 'secDashboard') {
                 switchTab('tabHome');
             } else {
                 document.getElementById(id).classList.remove('hidden');
             }
+        }
+
+        function openSurveysSection() {
+            if (!currentUser) {
+                alert("Kripya pehle login karein!");
+                return;
+            }
+            let appId = "37690";
+            let uid = currentUser.uid;
+            let name = encodeURIComponent(userData.name || currentUser.email.split('@')[0]);
+            let email = encodeURIComponent(currentUser.email || '');
+
+            // 30% payout calculation parameter setup for survey tracking (Multiplier = 0.30)
+            let surveyUrl = `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${uid}&username=${name}&email=${email}&subid_1=30pct&subid_2=`;
+            document.getElementById('cpxSurveyIframe').src = surveyUrl;
+
+            document.getElementById('tabHome').classList.add('hidden');
+            document.getElementById('secLudoLobby').classList.add('hidden');
+            document.getElementById('secLudoPlay').classList.add('hidden');
+            document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secWithdrawal').classList.add('hidden');
+            document.getElementById('secSurveys').classList.remove('hidden');
         }
 
         function showWithdrawalSection() {
@@ -469,6 +482,7 @@
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secSurveys').classList.add('hidden');
             document.getElementById('secWithdrawal').classList.remove('hidden');
         }
 
@@ -478,6 +492,7 @@
             document.getElementById('secLudoLobby').classList.add('hidden');
             document.getElementById('secLudoPlay').classList.add('hidden');
             document.getElementById('secAdmin').classList.add('hidden');
+            document.getElementById('secSurveys').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
         }
 
@@ -486,51 +501,6 @@
             if(currentUser) {
                 db.ref('users/' + currentUser.uid + '/wallet').set(userData.wallet);
             }
-        }
-
-        function watchAdminAd() {
-            if (!currentUser) return;
-            const today = new Date().toISOString().split('T')[0];
-            const userRef = db.ref('users/' + currentUser.uid);
-
-            userRef.once('value').then(snapshot => {
-                let uData = snapshot.val() || {};
-                if (uData.lastAdDate === today) {
-                    alert("Aap aaj ka Extra Mission complete kar chuke hain! Kal dobara milega.");
-                    let btn = document.getElementById('watchAdBtn');
-                    if (btn) {
-                        btn.innerText = "Claimed";
-                        btn.disabled = true;
-                    }
-                    return;
-                }
-
-                db.ref('settings/adLink').once('value', linkSnap => {
-                    let link = linkSnap.val();
-                    if (!link) {
-                        alert("Admin ne abhi ad link set nahi kiya hai!");
-                        return;
-                    }
-
-                    db.ref('settings/adPrize').once('value', prizeSnap => {
-                        let prizeAmt = parseFloat(prizeSnap.val()) || 1.00;
-
-                        window.open(link, '_blank');
-                        setTimeout(() => {
-                            if(confirm("Mission complete kar liya? OK dabayein reward claim karne ke liye.")) {
-                                updateWallet(prizeAmt);
-                                userRef.update({ lastAdDate: today });
-                                let btn = document.getElementById('watchAdBtn');
-                                if (btn) {
-                                    btn.innerText = "Claimed";
-                                    btn.disabled = true;
-                                }
-                                alert("Reward Added: ₹" + prizeAmt.toFixed(2));
-                            }
-                        }, 3000);
-                    });
-                });
-            });
         }
 
         // --- WITHDRAWAL & LOCAL STORAGE HISTORY ---
@@ -828,12 +798,6 @@
                 });
             });
 
-            db.ref('settings/adPrize').once('value', snap => {
-                if(snap.exists() && document.getElementById('admAdPrize')) {
-                    document.getElementById('admAdPrize').value = snap.val();
-                }
-            });
-
             db.ref('missions').on('value', snapshot => {
                 let list = document.getElementById('adminMissionsList');
                 if(!list) return;
@@ -937,16 +901,6 @@
         function adminToggleBan(uid, currentStatus) {
             db.ref('users/' + uid + '/banned').set(!currentStatus);
             alert("Status updated!");
-        }
-
-        function saveAdLink() {
-            let link = document.getElementById('admAdLink').value.trim();
-            if (link) { db.ref('settings/adLink').set(link); alert("Saved!"); }
-        }
-
-        function saveAdPrize() {
-            let prize = parseFloat(document.getElementById('admAdPrize').value);
-            if (!isNaN(prize)) { db.ref('settings/adPrize').set(prize); alert("Saved!"); }
         }
 
         function shareReferral() {
